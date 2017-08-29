@@ -25,8 +25,8 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 /************ FastLED Defintions ******************/
 
 #define DATA_PIN    D4 //on the NodeMCU 1.0, FastLED will default to the D5 pin after throwing an error during compiling. Leave as is. 
-#define LED_TYPE    WS2812 //change to match your LED type
-#define COLOR_ORDER GRB //change to match your LED configuration, ws2812 are GRB, 2811 are RGB
+#define LED_TYPE    WS2811 //change to match your LED type
+#define COLOR_ORDER RGB //change to match your LED configuration, ws2812 are GRB, 2811 are RGB
 #define NUM_LEDS    200 //change to match your setup, for multiple runs of LEDs use the number of the run with the most LEDs.
 
 ///////////////DrZzs Palettes for custom BPM effects//////////////////////////
