@@ -60,7 +60,7 @@ input_select:
      - "Twinkle"
     initial: "Solid"
 
-input_slider:
+input_number:
   animation_speed:
     name: Animation Speed
     initial: 150
@@ -86,7 +86,7 @@ automation:
     hide_entity: False
     trigger:
       - platform: state
-        entity_id: input_slider.animation_speed
+        entity_id: input_number.animation_speed
     action:
       - service: mqtt.publish
         data_template:
