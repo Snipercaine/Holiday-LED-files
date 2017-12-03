@@ -68,7 +68,7 @@ input_number:
     max: 150
     step: 10
 
-automation: 
+automation old: 
   - alias: "Holiday Input Effect"
     initial_state: True
     hide_entity: False
