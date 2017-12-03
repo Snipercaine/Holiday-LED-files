@@ -1,0 +1,31 @@
+  - alias: "Holiday LED Sunset Rotation"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      - platform: sun
+        event: sunset
+    condition:
+      - condition: template
+        value_template: '{{ now().month == 11 }}'
+      - condition: template
+        value_template: '{{ now().month == 12 }}'
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Holly Jolly'
+      - delay: 01:00:00
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Candy Cane' 
+      - delay: 01:00:00
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Christmas'
+      - delay: 01:00:00            
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Holly Jolly' 
