@@ -242,13 +242,11 @@ DEFINE_GRADIENT_PALETTE( Orange_to_Purple_gp ) {
 #define setcolorsub "bruh/mqttstrip/setcolor"
 #define setpowersub "bruh/mqttstrip/setpower"
 #define seteffectsub "bruh/mqttstrip/seteffect"
-#define seteffectsub2 "bruh/mqttstrip/seteffect2"
 #define setbrightness "bruh/mqttstrip/setbrightness"
 
 #define setcolorpub "bruh/mqttstrip/setcolorpub"
 #define setpowerpub "bruh/mqttstrip/setpowerpub"
 #define seteffectpub "bruh/mqttstrip/seteffectpub"
-#define seteffectpub2 "bruh/mqttstrip/seteffectpub2"
 #define setbrightnesspub "bruh/mqttstrip/setbrightnesspub"
 #define setanimationspeed "bruh/mqttstrip/setanimationspeed"
 
