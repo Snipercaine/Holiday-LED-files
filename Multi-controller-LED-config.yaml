@@ -1,1 +1,555 @@
+#######################################
+############## Holiday Outside Lights ######
+#######################################
+light:
+  - platform: mqtt
+    name: "Holiday Lights"
+    command_topic: "bruh/mqttstrip/setpower"
+    state_topic: "bruh/mqttstrip/setpowerpub"
+    rgb_state_topic: "bruh/mqttstrip/setcolorpub"
+    rgb_command_topic: "bruh/mqttstrip/setcolor"
+    brightness_state_topic: "bruh/mqttstrip/setbrightnesspub"
+    brightness_command_topic: "bruh/mqttstrip/setbrightness"
+    optimistic: false
 
+  - platform: mqtt
+    name: "Side Lights"
+    command_topic: "bruh/mqttstripSide/setpower"
+    state_topic: "bruh/mqttstripSide/setpowerpub"
+    rgb_state_topic: "bruh/mqttstripSide/setcolorpub"
+    rgb_command_topic: "bruh/mqttstripSide/setcolor"
+    brightness_state_topic: "bruh/mqttstripSide/setbrightnesspub"
+    brightness_command_topic: "bruh/mqttstripSide/setbrightness"
+    optimistic: false
+    
+  - platform: mqtt
+    name: "Office Test Lights"
+    command_topic: "bruh/mqttstripTEST/setpower"
+    state_topic: "bruh/mqttstripTEST/setpowerpub"
+    rgb_state_topic: "bruh/mqttstripTEST/setcolorpub"
+    rgb_command_topic: "bruh/mqttstripTEST/setcolor"
+    brightness_state_topic: "bruh/mqttstripTEST/setbrightnesspub"
+    brightness_command_topic: "bruh/mqttstripTEST/setbrightness"
+    optimistic: false
+
+  - platform: mqtt
+    name: "Tree Lights"
+    command_topic: "bruh/mqttstripTree/setpower"
+    state_topic: "bruh/mqttstripTree/setpowerpub"
+    rgb_state_topic: "bruh/mqttstripTree/setcolorpub"
+    rgb_command_topic: "bruh/mqttstripTree/setcolor"
+    brightness_state_topic: "bruh/mqttstripTree/setbrightnesspub"
+    brightness_command_topic: "bruh/mqttstripTree/setbrightness"
+    optimistic: false
+
+  - platform: mqtt
+    name: "Magic Box"
+    command_topic: "bruh/mqttstripBox/setpower"
+    state_topic: "bruh/mqttstripBox/setpowerpub"
+    rgb_state_topic: "bruh/mqttstripBox/setcolorpub"
+    rgb_command_topic: "bruh/mqttstripBox/setcolor"
+    brightness_state_topic: "bruh/mqttstripBox/setbrightnesspub"
+    brightness_command_topic: "bruh/mqttstripBox/setbrightness"
+    optimistic: false
+
+input_select:
+  holiday_led_effect:
+    name: Holiday LED Effect
+    options:
+     - "Christmas"
+     - "Candy Cane"
+     - "Holly Jolly"
+     - "Valentine"
+     - "Lovey Day"
+     - "St Patty"
+     - "Easter"
+     - "USA"
+     - "Independence"
+     - "Go Blue"
+     - "Hail"
+     - "Touchdown"
+     - "Halloween"
+     - "Punkin"
+     - "Thanksgiving"
+     - "Turkey Day"
+     - "BPM"
+     - "Confetti"
+     - "Cyclon Rainbow"
+     - "Dots"
+     - "Fire"
+     - "Glitter"
+     - "Juggle"
+     - "Lightning"
+     - "Police All"
+     - "Police One"
+     - "Rainbow"
+     - "Rainbow with Glitter"
+     - "Ripple"
+     - "Sinelon"
+     - "Solid"
+     - "Twinkle"
+    initial: "Solid"
+
+  side_led_effect:
+    name: Side LED Effect
+    options:
+     - "Christmas"
+     - "Candy Cane"
+     - "Holly Jolly"
+     - "Valentine"
+     - "Lovey Day"
+     - "St Patty"
+     - "Easter"
+     - "USA"
+     - "Independence"
+     - "Go Blue"
+     - "Hail"
+     - "Touchdown"
+     - "Halloween"
+     - "Punkin"
+     - "Thanksgiving"
+     - "Turkey Day"
+     - "BPM"
+     - "Confetti"
+     - "Cyclon Rainbow"
+     - "Dots"
+     - "Fire"
+     - "Glitter"
+     - "Juggle"
+     - "Lightning"
+     - "Police All"
+     - "Police One"
+     - "Rainbow"
+     - "Rainbow with Glitter"
+     - "Ripple"
+     - "Sinelon"
+     - "Solid"
+     - "Twinkle"
+    initial: "Solid"
+    
+  all_leds:
+    name: All LEDs
+    options:
+     - "Christmas"
+     - "Candy Cane"
+     - "Holly Jolly"
+     - "Valentine"
+     - "Lovey Day"
+     - "St Patty"
+     - "Easter"
+     - "USA"
+     - "Independence"
+     - "Go Blue"
+     - "Hail"
+     - "Touchdown"
+     - "Halloween"
+     - "Punkin"
+     - "Thanksgiving"
+     - "Turkey Day"
+     - "BPM"
+     - "Confetti"
+     - "Cyclon Rainbow"
+     - "Dots"
+     - "Fire"
+     - "Glitter"
+     - "Juggle"
+     - "Lightning"
+     - "Police All"
+     - "Police One"
+     - "Rainbow"
+     - "Rainbow with Glitter"
+     - "Ripple"
+     - "Sinelon"
+     - "Solid"
+     - "Twinkle"
+    initial: "Solid"
+
+  office_test_led_effect:
+    name: Office Test LED Effect
+    options:
+     - "Christmas"
+     - "Candy Cane"
+     - "Holly Jolly"
+     - "Valentine"
+     - "Lovey Day"
+     - "St Patty"
+     - "Easter"
+     - "USA"
+     - "Independence"
+     - "Go Blue"
+     - "Hail"
+     - "Touchdown"
+     - "Halloween"
+     - "Punkin"
+     - "Thanksgiving"
+     - "Turkey Day"
+     - "BPM"
+     - "Confetti"
+     - "Cyclon Rainbow"
+     - "Dots"
+     - "Fire"
+     - "Glitter"
+     - "Juggle"
+     - "Lightning"
+     - "Police All"
+     - "Police One"
+     - "Rainbow"
+     - "Rainbow with Glitter"
+     - "Ripple"
+     - "Sinelon"
+     - "Solid"
+     - "Twinkle"
+    initial: "Solid"
+
+  tree_led_effect:
+    name: Tree LED Effect
+    options:
+     - "Christmas"
+     - "Candy Cane"
+     - "Holly Jolly"
+     - "Valentine"
+     - "Lovey Day"
+     - "St Patty"
+     - "Easter"
+     - "USA"
+     - "Independence"
+     - "Go Blue"
+     - "Hail"
+     - "Touchdown"
+     - "Halloween"
+     - "Punkin"
+     - "Thanksgiving"
+     - "Turkey Day"
+     - "BPM"
+     - "Confetti"
+     - "Cyclon Rainbow"
+     - "Dots"
+     - "Fire"
+     - "Glitter"
+     - "Juggle"
+     - "Lightning"
+     - "Police All"
+     - "Police One"
+     - "Rainbow"
+     - "Rainbow with Glitter"
+     - "Ripple"
+     - "Sinelon"
+     - "Solid"
+     - "Twinkle"
+    initial: "Solid"
+
+  box_led_effect:
+    name: Magic Box Effect
+    options:
+     - "Christmas"
+     - "Candy Cane"
+     - "Holly Jolly"
+     - "Valentine"
+     - "Lovey Day"
+     - "St Patty"
+     - "Easter"
+     - "USA"
+     - "Independence"
+     - "Go Blue"
+     - "Hail"
+     - "Touchdown"
+     - "Halloween"
+     - "Punkin"
+     - "Thanksgiving"
+     - "Turkey Day"
+     - "BPM"
+     - "Confetti"
+     - "Cyclon Rainbow"
+     - "Dots"
+     - "Fire"
+     - "Glitter"
+     - "Juggle"
+     - "Lightning"
+     - "Police All"
+     - "Police One"
+     - "Rainbow"
+     - "Rainbow with Glitter"
+     - "Ripple"
+     - "Sinelon"
+     - "Solid"
+     - "Twinkle"
+    initial: "Rainbow"
+    
+    input_number:
+  animation_speed:
+    name: Animation Speed
+    initial: 150
+    min: 1
+    max: 150
+    step: 10
+  all_animation_speed:
+    name: All Animation Speed
+    initial: 150
+    min: 1
+    max: 150
+    step: 10
+  side_animation_speed:
+    name: Side Animation Speed
+    initial: 150
+    min: 1
+    max: 150
+    step: 10
+  test_animation_speed:
+    name: Test Animation Speed
+    initial: 150
+    min: 1
+    max: 150
+    step: 10
+  tree_animation_speed:
+    name: Tree Animation Speed
+    initial: 150
+    min: 1
+    max: 150
+    step: 10
+  box_animation_speed:
+    name: Box Animation Speed
+    initial: 150
+    min: 1
+    max: 150
+    step: 10
+####################################################################
+################ Automations the Old Fashion Way ###################
+####################################################################
+
+automation old: 
+  # - alias: "I'm Home"
+  #   initial_state: true
+  #   trigger:
+  #     - platform: state
+  #       entity_id: input_boolean.office_on
+  #   action:
+  #     - service: switch.turn_on
+
+
+  - alias: "All Holiday LEDs"
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: input_select.all_LEDs
+    action: 
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripSide/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTEST/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTree/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+
+  - alias: "Holiday Input Effect"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_select.holiday_led_effect
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+
+  - alias: "Side Input Effect"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_select.side_led_effect
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripSide/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+
+  - alias: "Christmas LED Sunset Rotation"
+    initial_state: true
+    trigger:
+      - platform: sun
+        event: Sunset
+    condition:
+      - condition: template
+        value_template: '{{ now().month == 12 }}'
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Holly Jolly'
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripSide/seteffect"
+          payload: 'Holly Jolly'      
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripTree/seteffect"
+          payload: 'Holly Jolly'
+      - delay: 01:00:00
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Candy Cane' 
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripSide/seteffect"
+          payload: 'Candy Cane' 
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripTree/seteffect"
+          payload: 'Hail'
+      - delay: 01:00:00
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Christmas'
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripSide/seteffect"
+          payload: 'Christmas'
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripTree/seteffect"
+          payload: 'Christmas'
+      - delay: 01:00:00            
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstrip/seteffect"
+          payload: 'Holly Jolly' 
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripSide/seteffect"
+          payload: 'Holly Jolly' 
+      - service: mqtt.publish
+        data:
+          topic: "bruh/mqttstripTree/seteffect"
+          payload: 'Holly Jolly' 
+
+  - alias: "Animation Speed"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_number.animation_speed
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstrip/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+
+  - alias: "All Animation Speed"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_number.all_animation_speed
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstrip/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTree/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripSide/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTEST/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+
+  - alias: "Side Animation Speed"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_number.side_animation_speed
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripSIDE/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+
+  - alias: "Office Test Input Effect"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_select.office_test_led_effect
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTEST/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+
+  - alias: "Test Animation Speed"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_number.test_animation_speed
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTEST/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+
+  - alias: "Tree Input Effect"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_select.tree_led_effect
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTree/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+
+  - alias: "Tree Animation Speed"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_number.tree_animation_speed
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripTree/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
+
+  - alias: "Box Input Effect"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_select.box_led_effect
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripBox/seteffect"
+          payload: '{{ trigger.to_state.state | string }}'
+
+  - alias: "Box Animation Speed"
+    initial_state: True
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_number.box_animation_speed
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: "bruh/mqttstripBox/setanimationspeed"
+          payload: '{{ trigger.to_state.state | int }}'
