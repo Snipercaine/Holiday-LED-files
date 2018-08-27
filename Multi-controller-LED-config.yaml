@@ -275,7 +275,7 @@ input_select:
      - "Twinkle"
     initial: "Rainbow"
     
-    input_number:
+input_number:
   animation_speed:
     name: Animation Speed
     initial: 150
