@@ -8,12 +8,15 @@
 This is the code I use for my MQTT LED Strip controlled from Home Assistant. It's a work in progress, but works great! Huge shout out to all the people I copied ideas from as a scoured around the internet. If you recoginze your code here and want credit, let me know and I'll get that added. Cheers! 
 */
 
-#include <Adafruit_NeoPixel.h>
+//#include <Adafruit_NeoPixel.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #define FASTLED_INTERRUPT_RETRY_COUNT 0
 #include <FastLED.h>
 
+#include <ArduinoOTA.h>
+#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
 
 /************ WIFI and MQTT INFORMATION (CHANGE THESE FOR YOUR SETUP) ******************/
 #define wifi_ssid "xxxx" //enter your WIFI SSID
@@ -23,10 +26,13 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 #define mqtt_user "xxxx" //enter your MQTT username
 #define mqtt_password "xxxx" //enter your password
 
+#define SENSORNAME "Arduino Project" //change this to whatever you want to call your device
+#define OTApassword "" //the password you will need to enter to upload remotely via the ArduinoIDE
+int OTAport = 8266;
 /************ FastLED Defintions ******************/
 
 #define DATA_PIN    D4 //on the NodeMCU 1.0, FastLED will default to the D5 pin after throwing an error during compiling. Leave as is. 
-#define LED_TYPE    WS2811 //change to match your LED type
+#define LED_TYPE    WS2811 //change to match your LED type WS2812
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 #define NUM_LEDS    175 //change to match your setup
 
@@ -365,6 +371,39 @@ void setup() {
 
   client.setServer(mqtt_server, 1883); //CHANGE PORT HERE IF NEEDED
   client.setCallback(callback);
+
+
+   //OTA SETUP
+  ArduinoOTA.setPort(OTAport);
+  // Hostname defaults to esp8266-[ChipID]
+  ArduinoOTA.setHostname(SENSORNAME);
+
+  // No authentication by default
+  ArduinoOTA.setPassword((const char *)OTApassword);
+
+  ArduinoOTA.onStart([]() {
+    Serial.println("Starting");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
+
+  Serial.println("Ready");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+ 
 }
 
 
@@ -470,6 +509,7 @@ void loop() {
   }
   client.loop();
 
+  ArduinoOTA.handle();
 
   int Rcolor = setColor.substring(0, setColor.indexOf(',')).toInt();
   int Gcolor = setColor.substring(setColor.indexOf(',') + 1, setColor.lastIndexOf(',')).toInt();
