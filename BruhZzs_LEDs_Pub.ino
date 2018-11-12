@@ -1032,7 +1032,7 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-  if (client.connect("espCLEDdev", mqtt_user, mqtt_password)) {
+  if (client.connect(SENSORNAME, mqtt_user, mqtt_password)) {
       Serial.println("connected");
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
