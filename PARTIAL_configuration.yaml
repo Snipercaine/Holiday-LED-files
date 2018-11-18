@@ -1,11 +1,12 @@
 ### THIS IS ONLY A PARTIAL CONFIGURATION FILE. 
 ### JUST ADD THESE PARTS TO YOUR configuration.yaml
-mqtt:
-  broker: your.mqtt.HA.pi
-  port: 1883
-  client_id: home-assistant-1
-  username: yourmqttname
-  password: yourmqttpw
+### mqtt removed from configuration.yaml and movrd to Integrations
+#mqtt:
+#  broker: your.mqtt.HA.pi
+#  port: 1883
+#  client_id: home-assistant-1
+#  username: yourmqttname
+#  password: yourmqttpw
 
 #######################################
 ############## Holiday Outside Lights ######
