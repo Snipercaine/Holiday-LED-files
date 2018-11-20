@@ -1,6 +1,6 @@
 ### THIS IS ONLY A PARTIAL CONFIGURATION FILE. 
 ### JUST ADD THESE PARTS TO YOUR configuration.yaml
-### mqtt removed from configuration.yaml and movrd to Integrations
+### mqtt removed from configuration.yaml and moved to Integrations
 #mqtt:
 #  broker: your.mqtt.HA.pi
 #  port: 1883
