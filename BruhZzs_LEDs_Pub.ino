@@ -26,7 +26,7 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 #define mqtt_user "xxxx" //enter your MQTT username
 #define mqtt_password "xxxx" //enter your password
 
-#define SENSORNAME "Arduino Project" //change this to whatever you want to call your device
+#define SENSORNAME "LEDstrip" //change this to whatever you want to call your device
 #define OTApassword "" //the password you will need to enter to upload remotely via the ArduinoIDE
 int OTAport = 8266;
 /************ FastLED Defintions ******************/
@@ -234,17 +234,17 @@ DEFINE_GRADIENT_PALETTE( Orange_to_Purple_gp ) {
 
 /****************************** MQTT TOPICS (change these topics as you wish)  ***************************************/
 
-#define colorstatuspub "bruh/mqttstripSide/colorstatus"
-#define setcolorsub "bruh/mqttstripSide/setcolor"
-#define setpowersub "bruh/mqttstripSide/setpower"
-#define seteffectsub "bruh/mqttstripSide/seteffect"
-#define setbrightness "bruh/mqttstripSide/setbrightness"
+#define colorstatuspub "bruh/mqttstrip/colorstatus"
+#define setcolorsub "bruh/mqttstrip/setcolor"
+#define setpowersub "bruh/mqttstrip/setpower"
+#define seteffectsub "bruh/mqttstrip/seteffect"
+#define setbrightness "bruh/mqttstrip/setbrightness"
 
-#define setcolorpub "bruh/mqttstripSide/setcolorpub"
-#define setpowerpub "bruh/mqttstripSide/setpowerpub"
-#define seteffectpub "bruh/mqttstripSide/seteffectpub"
-#define setbrightnesspub "bruh/mqttstripSide/setbrightnesspub"
-#define setanimationspeed "bruh/mqttstripSide/setanimationspeed"
+#define setcolorpub "bruh/mqttstrip/setcolorpub"
+#define setpowerpub "bruh/mqttstrip/setpowerpub"
+#define seteffectpub "bruh/mqttstrip/seteffectpub"
+#define setbrightnesspub "bruh/mqttstrip/setbrightnesspub"
+#define setanimationspeed "bruh/mqttstrip/setanimationspeed"
 
 /*************************** EFFECT CONTROL VARIABLES AND INITIALIZATIONS ************************************/
 
@@ -340,8 +340,8 @@ uint8_t gHue = 0;
 char message_buff[100];
 
 
-WiFiClient espCLEDside;
-PubSubClient client(espCLEDside);
+WiFiClient espCLED; //this needs to be unique for each controller
+PubSubClient client(espCLEDs); //this needs to be unique for each controller
 
 ////////////////////////////////////////////////////////////
 
