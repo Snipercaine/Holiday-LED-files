@@ -340,8 +340,8 @@ uint8_t gHue = 0;
 char message_buff[100];
 
 
-WiFiClient espCLED; //this needs to be unique for each controller
-PubSubClient client(espCLEDs); //this needs to be unique for each controller
+WiFiClient espClient; //this needs to be unique for each controller
+PubSubClient client(espClient); //this needs to be unique for each controller
 
 ////////////////////////////////////////////////////////////
 
