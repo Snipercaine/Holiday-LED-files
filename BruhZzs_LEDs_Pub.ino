@@ -373,16 +373,17 @@ void setup() {
   client.setCallback(callback);
 
 
-   //OTA SETUP
-  ArduinoOTA.setPort(OTAport);
-  // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname(SENSORNAME);
-
-  // No authentication by default
-  ArduinoOTA.setPassword((const char *)OTApassword);
-
-  ArduinoOTA.onStart([]() {
-    Serial.println("Starting");
+   ArduinoOTA.setPort(OTAport);
+   ArduinoOTA.setHostname(SENSORNAME);
+   ArduinoOTA.setPassword((const char *)OTApassword);
+   ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else { // U_SPIFFS
+      type = "filesystem";
+    }
+     Serial.println("Start updating " + type);
   });
   ArduinoOTA.onEnd([]() {
     Serial.println("\nEnd");
@@ -392,16 +393,21 @@ void setup() {
   });
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
   });
   ArduinoOTA.begin();
-
   Serial.println("Ready");
-  Serial.print("IP Address: ");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
  
 }
@@ -510,7 +516,7 @@ void loop() {
   client.loop();
 
   ArduinoOTA.handle();
-
+  
   int Rcolor = setColor.substring(0, setColor.indexOf(',')).toInt();
   int Gcolor = setColor.substring(setColor.indexOf(',') + 1, setColor.lastIndexOf(',')).toInt();
   int Bcolor = setColor.substring(setColor.lastIndexOf(',') + 1).toInt();
