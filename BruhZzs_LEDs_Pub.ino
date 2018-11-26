@@ -8,15 +8,19 @@
 This is the code I use for my MQTT LED Strip controlled from Home Assistant. It's a work in progress, but works great! Huge shout out to all the people I copied ideas from as a scoured around the internet. If you recoginze your code here and want credit, let me know and I'll get that added. Cheers! 
 */
 
-//#include <Adafruit_NeoPixel.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#define FASTLED_INTERRUPT_RETRY_COUNT 0
 #include <FastLED.h>
 
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
+
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
+
+#define FASTLED_INTERRUPT_RETRY_COUNT 0
 
 /************ WIFI and MQTT INFORMATION (CHANGE THESE FOR YOUR SETUP) ******************/
 #define wifi_ssid "xxxx" //enter your WIFI SSID
@@ -35,6 +39,10 @@ int OTAport = 8266;
 #define LED_TYPE    WS2811 //change to match your LED type WS2812
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 #define NUM_LEDS    175 //change to match your setup
+
+
+ESP8266WebServer httpServer(80);
+ESP8266HTTPUpdateServer httpUpdater;
 
 ///////////////DrZzs Palettes for custom BPM effects//////////////////////////
 ///////////////Add any custom palettes here//////////////////////////////////
@@ -372,6 +380,10 @@ void setup() {
   client.setServer(mqtt_server, 1883); //CHANGE PORT HERE IF NEEDED
   client.setCallback(callback);
 
+  MDNS.begin(SENSORNAME);
+  httpUpdater.setup(&httpServer);
+  httpServer.begin();
+  MDNS.addService("http", "tcp", 80);
 
    ArduinoOTA.setPort(OTAport);
    ArduinoOTA.setHostname(SENSORNAME);
@@ -514,7 +526,8 @@ void loop() {
     reconnect();
   }
   client.loop();
-
+  
+  httpServer.handleClient();
   ArduinoOTA.handle();
   
   int Rcolor = setColor.substring(0, setColor.indexOf(',')).toInt();
