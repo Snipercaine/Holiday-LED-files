@@ -225,17 +225,17 @@ DEFINE_GRADIENT_PALETTE( Orange_to_Purple_gp ) {
 
 /****************************** MQTT TOPICS (change these topics as you wish)  ***************************************/
 
-#define colorstatuspub "bruh/mqttstrip/colorstatus"
-#define setcolorsub "bruh/mqttstrip/setcolor"
-#define setpowersub "bruh/mqttstrip/setpower"
-#define seteffectsub "bruh/mqttstrip/seteffect"
-#define setbrightness "bruh/mqttstrip/setbrightness"
+//#define colorstatuspub "bruh/mqttstrip/colorstatus"
+//#define setcolorsub "bruh/mqttstrip/setcolor"
+//#define setpowersub "bruh/mqttstrip/setpower"
+//#define seteffectsub "bruh/mqttstrip/seteffect"
+//#define setbrightness "bruh/mqttstrip/setbrightness"
 
-#define setcolorpub "bruh/mqttstrip/setcolorpub"
-#define setpowerpub "bruh/mqttstrip/setpowerpub"
-#define seteffectpub "bruh/mqttstrip/seteffectpub"
-#define setbrightnesspub "bruh/mqttstrip/setbrightnesspub"
-#define setanimationspeed "bruh/mqttstrip/setanimationspeed"
+//#define setcolorpub "bruh/mqttstrip/setcolorpub"
+//#define setpowerpub "bruh/mqttstrip/setpowerpub"
+//#define seteffectpub "bruh/mqttstrip/seteffectpub"
+//#define setbrightnesspub "bruh/mqttstrip/setbrightnesspub"
+//#define setanimationspeed "bruh/mqttstrip/setanimationspeed"
 
 /*************************** EFFECT CONTROL VARIABLES AND INITIALIZATIONS ************************************/
 
@@ -256,6 +256,18 @@ int Gcolor = 0;
 int Bcolor = 0;
 CRGB leds[NUM_LEDS];
 char mcuHostName[64]; 
+char lwtTopic[96];  
+char colorstatusPubTopic[96];    
+char setcolorSubTopic[96];  
+char setpowerSubTopic[96];   
+char seteffectSubTopic[96];   
+char setbrightnessTopic[96];   
+char setcolorPubTopic[96];   
+char setpowerPubTopic[96];   
+char seteffectPubTopic[96];   
+char setbrightnessPubTopic[96];   
+char setanimationspeedTopic[96];   
+
 
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
@@ -350,12 +362,42 @@ const char *getDeviceID() {
 }
 
 void setup() {
-
+  Serial.begin(115200);
   // build hostname with last 6 of MACID
   os_strcpy(mcuHostName, getDeviceID());
+
+  // ~~~~ Set MQTT Topics
+  sprintf_P(lwtTopic, PSTR("%s/LWT"), mcuHostName);
+  
+  sprintf_P(colorstatusPubTopic, PSTR("%s/colorstatus"), mcuHostName); 
+
+  sprintf_P(setcolorSubTopic, PSTR("%s/setcolor"), mcuHostName);    
+  sprintf_P(setpowerSubTopic, PSTR("%s/setpower"), mcuHostName);    
+  sprintf_P(seteffectSubTopic, PSTR("%s/seteffect"), mcuHostName);    
+  sprintf_P(setbrightnessTopic, PSTR("%s/setbrightness"), mcuHostName);    
+
+  sprintf_P(setcolorPubTopic, PSTR("%s/setcolorpub"), mcuHostName);    
+  sprintf_P(setpowerPubTopic, PSTR("%s/setpowerpub"), mcuHostName);    
+  sprintf_P(seteffectPubTopic, PSTR("%s/seteffectpub"), mcuHostName);    
+  sprintf_P(setbrightnessPubTopic, PSTR("%s/setbrightnesspub"), mcuHostName);    
+
+  sprintf_P(setanimationspeedTopic, PSTR("%s/setanimationspeed"), mcuHostName);    
+
+
+
+//#define colorstatuspub "bruh/mqttstrip/colorstatus"
+//#define setcolorsub "bruh/mqttstrip/setcolor"
+//#define setpowersub "bruh/mqttstrip/setpower"
+//#define seteffectsub "bruh/mqttstrip/seteffect"
+//#define setbrightness "bruh/mqttstrip/setbrightness"
+
+//#define setcolorpub "bruh/mqttstrip/setcolorpub"
+//#define setpowerpub "bruh/mqttstrip/setpowerpub"
+//#define seteffectpub "bruh/mqttstrip/seteffectpub"
+//#define setbrightnesspub "bruh/mqttstrip/setbrightnesspub"
+//#define setanimationspeed "bruh/mqttstrip/setanimationspeed"  
   
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
-  Serial.begin(115200);
 
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
@@ -450,7 +492,7 @@ void setup_wifi() {
 void callback(char* topic, byte* payload, unsigned int length) {
   int i = 0;
 
-  if (String(topic) == setpowersub) {
+  if (String(topic) == setpowerSubTopic) {
     for (i = 0; i < length; i++) {
       message_buff[i] = payload[i];
     }
@@ -458,16 +500,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
     setPower = String(message_buff);
     Serial.println("Set Power: " + setPower);
     if (setPower == "OFF") {
-      client.publish(setpowerpub, "OFF");
+      client.publish(setpowerPubTopic, "OFF");
     }
 
     if (setPower == "ON") {
-      client.publish(setpowerpub, "ON");
+      client.publish(setpowerPubTopic, "ON");
     }
   }
 
 
-  if (String(topic) == seteffectsub) {
+  if (String(topic) == seteffectSubTopic) {
     for (i = 0; i < length; i++) {
       message_buff[i] = payload[i];
     }
@@ -475,7 +517,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     setEffect = String(message_buff);
     Serial.println("Set Effect: " + setEffect);
     setPower = "ON";
-    client.publish(setpowerpub, "ON");
+    client.publish(setpowerPubTopic, "ON");
     if (setEffect == "Twinkle") {
       twinklecounter = 0;
     }
@@ -485,7 +527,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 
 
-  if (String(topic) == setbrightness) {
+  if (String(topic) == setbrightnessTopic) {
     for (i = 0; i < length; i++) {
       message_buff[i] = payload[i];
     }
@@ -494,22 +536,22 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println("Set Brightness: " + setBrightness);
     brightness = setBrightness.toInt();
     setPower = "ON";
-    client.publish(setpowerpub, "ON");
+    client.publish(setpowerPubTopic, "ON");
   }
 
-  if (String(topic) == setcolorsub) {
+  if (String(topic) == setcolorSubTopic) {
     for (i = 0; i < length; i++) {
       message_buff[i] = payload[i];
     }
     message_buff[i] = '\0';
-    client.publish(setcolorpub, message_buff);
+    client.publish(setcolorPubTopic, message_buff);
     setColor = String(message_buff);
     Serial.println("Set Color: " + setColor);
     setPower = "ON";
-    client.publish(setpowerpub, "ON");
+    client.publish(setpowerPubTopic, "ON");
     }
 
-  if (String(topic) == setanimationspeed) {
+  if (String(topic) == setanimationspeedTopic) {
     for (i = 0; i < length; i++) {
       message_buff[i] = payload[i];
     }
@@ -1050,21 +1092,21 @@ void addGlitterColor( fract8 chanceOfGlitter, int Rcolor, int Gcolor, int Bcolor
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
+    Serial.println("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     // Attempt to connect
   if (client.connect(mcuHostName, mqtt_user, mqtt_password)) {
-      Serial.println("connected");
+      Serial.println("MQTT: Connected");
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();
 
-      client.subscribe(setcolorsub);
-      client.subscribe(setbrightness);
+      client.subscribe(setcolorSubTopic);
+      client.subscribe(setbrightnessTopic);
       //client.subscribe(setcolortemp);
-      client.subscribe(setpowersub);
-      client.subscribe(seteffectsub);
-      client.subscribe(setanimationspeed);
-      client.publish(setpowerpub, "OFF");
+      client.subscribe(setpowerSubTopic);
+      client.subscribe(seteffectSubTopic);
+      client.subscribe(setanimationspeedTopic);
+      client.publish(setpowerPubTopic, "OFF");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
