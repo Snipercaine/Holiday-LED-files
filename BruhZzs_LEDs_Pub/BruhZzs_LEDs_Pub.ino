@@ -8,25 +8,40 @@
 This is the code I use for my MQTT LED Strip controlled from Home Assistant. It's a work in progress, but works great! Huge shout out to all the people I copied ideas from as a scoured around the internet. If you recoginze your code here and want credit, let me know and I'll get that added. Cheers! 
 */
 #include "config.h"           // rename sample_config.h and edit any values needed
-
+#include <FS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+#include <DNSServer.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266httpUpdate.h>
+#include <ESP8266HTTPUpdateServer.h>
+#include <WiFiManager.h>
+#include <ArduinoJson.h>
+#include <EEPROM.h>
+#include <SoftwareSerial.h>
+#include <TimeLib.h>                            // Time library
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <FastLED.h>
-
-#include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
-
 #include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
 
-#define FASTLED_INTERRUPT_RETRY_COUNT 0
+//#define FASTLED_INTERRUPT_RETRY_COUNT 0
 
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
+char wifiConfigAP[19]; 
+char wifiConfigPass[9];                          // AP config password, always 8 chars + NUL
+bool shouldSaveConfig = false;                   // Flag to save json config to SPIFFS
+const char LED_STYLE[] = "<style>button{background-color:#03A9F4;}body{width:60%;margin:auto;}</style>";
+WiFiClient wifiClient;
+ESP8266WebServer webServer(80);
 
+char wifiSSID[32] = ""; // Leave unset for wireless autoconfig.
+char wifiPass[64] = ""; // Note that these values will be lost if auto-update is used,
+	   
 ///////////////DrZzs Palettes for custom BPM effects//////////////////////////
 ///////////////Add any custom palettes here//////////////////////////////////
 
@@ -384,19 +399,6 @@ void setup() {
   sprintf_P(setanimationspeedTopic, PSTR("%s/setanimationspeed"), mcuHostName);    
 
 
-
-//#define colorstatuspub "bruh/mqttstrip/colorstatus"
-//#define setcolorsub "bruh/mqttstrip/setcolor"
-//#define setpowersub "bruh/mqttstrip/setpower"
-//#define seteffectsub "bruh/mqttstrip/seteffect"
-//#define setbrightness "bruh/mqttstrip/setbrightness"
-
-//#define setcolorpub "bruh/mqttstrip/setcolorpub"
-//#define setpowerpub "bruh/mqttstrip/setpowerpub"
-//#define seteffectpub "bruh/mqttstrip/seteffectpub"
-//#define setbrightnesspub "bruh/mqttstrip/setbrightnesspub"
-//#define setanimationspeed "bruh/mqttstrip/setanimationspeed"  
-  
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
 
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -411,13 +413,25 @@ void setup() {
   setupIndPalette( CRGB::FireBrick, CRGB::Cornsilk, CRGB::MediumBlue, CRGB::MediumBlue); //for Independence
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  setup_wifi();
+  
+  webServer.on("/", webHandleRoot);
+  webServer.on("/saveConfig", webHandleSaveConfig);
+  webServer.on("/resetConfig", webHandleResetConfig);
+ // webServer.on("/firmware", webHandleFirmware);
+ // webServer.on("/espfirmware", webHandleEspFirmware);
+ // webServer.on("/reboot", webHandleReboot);
+  //webServer.onNotFound(webHandleNotFound);
+  webServer.begin();
+
   
   gPal = HeatColors_p; //for FIRE
 
   fill_solid(leds, NUM_LEDS, CRGB(255, 0, 0)); //Startup LED Lights
   FastLED.show();
 
-  setup_wifi();
+//  setup_wifi();
 
   client.setServer(mqtt_server, 1883); //CHANGE PORT HERE IF NEEDED
   client.setCallback(callback);
@@ -470,24 +484,88 @@ void setup() {
 void setup_wifi() {
 
   delay(10);
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(wifi_ssid);
+//  Serial.println();
+//  Serial.print("Connecting to ");
+//  Serial.println(wifi_ssid);
 
-  WiFi.mode(WIFI_STA);
+//  WiFi.mode(WIFI_STA);
+//  WiFi.hostname(mcuHostName);
+//  WiFi.begin(wifi_ssid, wifi_password);
+
+//  while (WiFi.status() != WL_CONNECTED) {
+//    delay(500);
+//    Serial.print(".");
+//  }
+//
+//  Serial.println("");
+//  Serial.println("WiFi connected");
+//  Serial.println("IP address: ");
+// Serial.println(WiFi.localIP());
+  
+  
+  // Assign our hostname (default esp_name + left 6 MAC) before connecting to WiFi
   WiFi.hostname(mcuHostName);
-  WiFi.begin(wifi_ssid, wifi_password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+  if ( WiFi.status() != WL_CONNECTED) /// (String(wifiSSID) == "")
+  { // If the sketch has no defined a static wifiSSID to connect to,
+    // use WiFiManager to collect required information from the user.
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
+    // id/name, placeholder/prompt, default value, length, extra tags
+    WiFiManagerParameter custom_LEDNodeHeader("<br/><br/><b>DRZZZ's Holiday LED's</b>");
+    WiFiManagerParameter custom_mqttHeader("<br/><br/><b>MQTT Broker</b>");
+    WiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT Server", mqtt_server, 63, " maxlength=39");
+    WiFiManagerParameter custom_mqtt_port("mqtt_port", "MQTT Port", mqtt_port, 5, " maxlength=5 type='number'");
+    WiFiManagerParameter custom_mqtt_user("mqtt_user", "MQTT User", mqtt_user, 31, " maxlength=31");
+    WiFiManagerParameter custom_mqtt_password("mqtt_password", "MQTT Password", mqtt_password, 31, " maxlength=31 type='password'");
+    WiFiManagerParameter custom_LEDtpe("LEDTPE", "LED Type WS2811", Param1, 63, " maxlength=39");
+    WiFiManagerParameter custom_mqttColororder("COLOR_ORDER", "RGB", Param2, 31, " maxlength=39");
+    WiFiManagerParameter custom_mqttNumleds("NUM_LEDS", "Number of LED's", Param3, 5, " maxlength=5 type='number'");
+    WiFiManagerParameter custom_espName("Sensor", "Devicename", espName, 63, " maxlength=39");
+
+
+    // WiFiManager local intialization. Once its business is done, there is no need to keep it around
+    WiFiManager wifiManager;
+
+    // set config save notify callback
+    wifiManager.setSaveConfigCallback(saveConfigCallback);
+
+    wifiManager.setCustomHeadElement(LED_STYLE);
+
+    // Add all your parameters here
+    wifiManager.addParameter(&custom_LEDNodeHeader);
+    wifiManager.addParameter(&custom_mqttHeader);
+    wifiManager.addParameter(&custom_mqtt_server);
+    wifiManager.addParameter(&custom_mqtt_port);
+    wifiManager.addParameter(&custom_mqtt_user);
+    wifiManager.addParameter(&custom_mqtt_password);
+    wifiManager.addParameter(&custom_LEDtpe);
+    wifiManager.addParameter(&custom_mqttColororder);
+    wifiManager.addParameter(&custom_mqttNumleds);
+    wifiManager.addParameter(&custom_espName);
+
+
+    // Timeout until configuration portal gets turned off
+    wifiManager.setTimeout(180);
+
+   
+    // Construct AP name
+    String strWifiConfigAP = String("DRzz's Holiday LED's");
+    strWifiConfigAP.toCharArray(wifiConfigAP, (strWifiConfigAP.length() + 1));
+    
+    String strConfigPass = "123" ;
+    strConfigPass.toCharArray(wifiConfigPass, 9);
+
+    // Fetches SSID and pass from EEPROM and tries to connect
+    // If it does not connect it starts an access point with the specified name
+    // and goes into a blocking loop awaiting configuration.
+    if (!wifiManager.autoConnect(wifiConfigAP, wifiConfigPass))
+    { // Reset and try again
+      Serial.println(F("WIFI: Failed to connect and hit timeout"));
+      espReset();
+      
+}}}
+  
+//}
 
 void callback(char* topic, byte* payload, unsigned int length) {
   int i = 0;
@@ -565,12 +643,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void loop() {
 
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
+//  if (!client.connected()) {
+//    reconnect();
+//  }
+//  client.loop();  // commented out block when hand merging
   
   httpServer.handleClient();
+  
+  while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0"))
+  { // Check WiFi is connected and that we have a valid IP, retry until we do.
+    if (WiFi.status() == WL_CONNECTED)
+    { // If we're currently connected, disconnect so we can try again
+      WiFi.disconnect();
+    }
+    setup_wifi();
+  }
+  webServer.handleClient(); // webServer loop
+  client.loop();
+  
+  
   ArduinoOTA.handle();
   
   int Rcolor = setColor.substring(0, setColor.indexOf(',')).toInt();
@@ -1094,7 +1185,7 @@ void reconnect() {
   while (!client.connected()) {
     Serial.println("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     // Attempt to connect
-  if (client.connect(mcuHostName, mqtt_user, mqtt_password, lwtTopic, 1, 1, "Offline")) {
+    if (client.connect(mcuHostName, mqtt_user, mqtt_password, lwtTopic, 1, 1, "Offline")) {
       client.publish(lwtTopic,"Online", true);
       Serial.println("MQTT: Connected");
 
@@ -1115,5 +1206,229 @@ void reconnect() {
       // Wait 5 seconds before retrying
       delay(5000);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void saveConfigCallback()
+{ // Callback notifying us of the need to save config
+  Serial.println(F("SPIFFS: Configuration changed, flagging for save"));
+  shouldSaveConfig = true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void saveUpdatedConfig()
+{ // Save the custom parameters to config.json
+  DynamicJsonBuffer jsonBuffer(256);
+  JsonObject &json = jsonBuffer.createObject();
+  json["mqtt_server"] = mqtt_server;
+  json["mqtt_port"] = mqtt_port;
+  json["mqtt_user"] = mqtt_user;
+  json["mqtt_password"] = mqtt_password;
+  
+  File configFile = SPIFFS.open("/config.json", "w");
+  if (!configFile)
+  {
+    Serial.println(F("SPIFFS: Failed to open config file for writing"));
+  }
+  else
+  {
+    json.printTo(configFile);
+    configFile.close();
+  }
+  shouldSaveConfig = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void clearSavedConfig()
+{ // Clear out all local storage
+  SPIFFS.format();
+  WiFiManager wifiManager;
+  wifiManager.resetSettings();
+  EEPROM.begin(512);
+  for (uint16_t i = 0; i < EEPROM.length(); i++)
+  {
+    EEPROM.write(i, 0);
+  }
+  espReset();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void espReset()
+{
+  if (client.connected())
+  {
+    client.publish(setpowerSubTopic, "OFF");
+    client.disconnect();
+  }
+  delay(2000);
+  Serial1.print("rest");
+  Serial1.flush();
+  ESP.reset();
+  delay(5000);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void webHandleRoot()
+{ 
+  // If we haven't collected the Nextion model, try now
+  String httpMessage = FPSTR(HTTP_HEAD);
+  httpMessage.replace("{v}", String(espName));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+  httpMessage += FPSTR(HTTP_HEAD_END);
+  httpMessage += String(F("<h1>"));
+  httpMessage += String(espName);
+  httpMessage += String(F("</h1>"));
+
+  httpMessage += String(F("<form method='POST' action='saveConfig'>"));
+  httpMessage += String(F("<b>WiFi SSID</b> <i><small>(required)</small></i><input id='wifiSSID' required name='wifiSSID' maxlength=32 placeholder='WiFi SSID' value='")) + String(WiFi.SSID()) + "'>";
+  httpMessage += String(F("<br/><b>WiFi Password</b> <i><small>(required)</small></i><input id='wifiPass' required name='wifiPass' type='password' maxlength=64 placeholder='WiFi Password' value='")) + String("********") + "'>";
+  httpMessage += String(F("<br/><br/><b>LED Node Name</b> <i><small>(required)</small></i><input id='espName' required name='espName' maxlength=15 placeholder='LED Node Name' value='")) + String(espName) + "'>";
+ httpMessage += String(F("<br/><br/><b>MQTT Broker</b> <i><small>(required)</small></i><input id='mqtt_server' required name='mqtt_server' maxlength=63 placeholder='mqtt_server' value='")) + String(mqtt_server) + "'>";
+  httpMessage += String(F("<br/><b>MQTT Port</b> <i><small>(required)</small></i><input id='mqtt_port' required name='mqtt_port' type='number' maxlength=5 placeholder='mqtt_port' value='")) + String(mqtt_port) + "'>";
+  httpMessage += String(F("<br/><b>MQTT User</b> <i><small>(optional)</small></i><input id='mqtt_user' name='mqtt_user' maxlength=31 placeholder='mqtt_user' value='")) + String(mqtt_user) + "'>";
+  httpMessage += String(F("<br/><b>MQTT Password</b> <i><small>(optional)</small></i><input id='mqtt_password' name='mqtt_password' type='password' maxlength=31 placeholder='mqtt_password'>"));
+  httpMessage += String(F("<br/><hr><button type='submit'>save settings</button></form>"));
+
+
+
+  httpMessage += String(F("<hr><form method='get' action='Paterns'>"));
+  httpMessage += String(F("<button type='submit'>Run LED paterns</button></form>"));
+
+  httpMessage += String(F("<hr><form method='get' action='reboot'>"));
+  httpMessage += String(F("<button type='submit'>reboot device</button></form>"));
+
+  httpMessage += String(F("<hr><form method='get' action='resetConfig'>"));
+  httpMessage += String(F("<button type='submit'>factory reset settings</button></form>"));
+
+  httpMessage += String(F("<hr><b>MQTT Status: </b>"));
+  if (client.connected())
+  { // Check MQTT connection
+    httpMessage += String(F("Connected"));
+  }
+  else
+  {
+   // httpMessage += String(F("<font color='red'><b>Disconnected</b></font>, return code: ")) + String(client.returnCode());
+  }
+ // httpMessage += String(F("<br/><b>MQTT ClientID: </b>")) + String(mqttClientId);
+  httpMessage += String(F("<br/><b>CPU Frequency: </b>")) + String(ESP.getCpuFreqMHz()) + String(F("MHz"));
+  httpMessage += String(F("<br/><b>Sketch Size: </b>")) + String(ESP.getSketchSize()) + String(F(" bytes"));
+  httpMessage += String(F("<br/><b>Free Sketch Space: </b>")) + String(ESP.getFreeSketchSpace()) + String(F(" bytes"));
+  httpMessage += String(F("<br/><b>Heap Free: </b>")) + String(ESP.getFreeHeap());
+  httpMessage += String(F("<br/><b>IP Address: </b>")) + String(WiFi.localIP().toString());
+  httpMessage += String(F("<br/><b>Signal Strength: </b>")) + String(WiFi.RSSI());
+  httpMessage += String(F("<br/><b>Uptime: </b>")) + String(long(millis() / 1000));
+  httpMessage += String(F("<br/><b>Last reset: </b>")) + String(ESP.getResetInfo());
+
+  httpMessage += FPSTR(HTTP_END);
+  webServer.send(200, "text/html", httpMessage);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void webHandleSaveConfig()
+{ 
+  String httpMessage = FPSTR(HTTP_HEAD);
+  httpMessage.replace("{v}", String(espName));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+
+  bool shouldSaveWifi = false;
+  // Check required values
+  if (webServer.arg("wifiSSID") != "" && webServer.arg("wifiSSID") != String(WiFi.SSID()))
+  { // Handle WiFi update
+    shouldSaveConfig = true;
+    shouldSaveWifi = true;
+    webServer.arg("wifiSSID").toCharArray(wifiSSID, 32);
+    webServer.arg("wifiPass").toCharArray(wifiPass, 64);
+  }
+  if (webServer.arg("mqtt_server") != "" && webServer.arg("mqtt_server") != String(mqtt_server))
+  { // Handle mqtt_server
+    shouldSaveConfig = true;
+    webServer.arg("mqtt_server").toCharArray(mqtt_server, 64);
+  }
+  if (webServer.arg("mqtt_port") != "" && webServer.arg("mqtt_port") != String(mqtt_port))
+  { // Handle mqtt_port
+    shouldSaveConfig = true;
+    webServer.arg("mqtt_port").toCharArray(mqtt_port, 6);
+  }
+  if (webServer.arg("espName") != "" && webServer.arg("espName") != String(espName))
+  { // Handle espName
+    shouldSaveConfig = true;
+    webServer.arg("espName").toCharArray(espName, 16);
+  }
+
+  // Check optional values
+  if (webServer.arg("mqtt_user") != String(mqtt_user))
+  { // Handle mqtt_user
+    shouldSaveConfig = true;
+    webServer.arg("mqtt_user").toCharArray(mqtt_user, 32);
+  }
+  if (webServer.arg("mqtt_password") != String(mqtt_password))
+  { // Handle mqtt_password
+    shouldSaveConfig = true;
+    webServer.arg("mqtt_password").toCharArray(mqtt_password, 32);
+  }
+
+
+  if (shouldSaveConfig)
+  { // Config updated, notify user and trigger write to SPIFFS
+    httpMessage += String(F("<meta http-equiv='refresh' content='15;url=/' />"));
+    httpMessage += FPSTR(HTTP_HEAD_END);
+    httpMessage += String(F("<h1>")) + String(espName) + String(F("</h1>"));
+    httpMessage += String(F("<br/>Saving updated configuration values and restarting device"));
+    httpMessage += FPSTR(HTTP_END);
+    webServer.send(200, "text/html", httpMessage);
+    saveUpdatedConfig();
+    if (shouldSaveWifi)
+    {
+     
+      setup_wifi();
+    }
+    espReset();
+  }
+  else
+  { // No change found, notify user and link back to config page
+    httpMessage += String(F("<meta http-equiv='refresh' content='3;url=/' />"));
+    httpMessage += FPSTR(HTTP_HEAD_END);
+    httpMessage += String(F("<h1>")) + String(espName) + String(F("</h1>"));
+    httpMessage += String(F("<br/>No changes found, returning to <a href='/'>home page</a>"));
+    httpMessage += FPSTR(HTTP_END);
+    webServer.send(200, "text/html", httpMessage);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void webHandleResetConfig()
+{ // http://plate02/resetConfig
+ 
+  String httpMessage = FPSTR(HTTP_HEAD);
+  httpMessage.replace("{v}", String(espName));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+  httpMessage += FPSTR(HTTP_HEAD_END);
+
+  if (webServer.arg("confirm") == "yes")
+  { // User has confirmed, so reset everything
+    httpMessage += String(F("<h1>"));
+    httpMessage += String(espName);
+    httpMessage += String(F("</h1><b>Resetting all saved settings and restarting device into WiFi AP mode</b>"));
+    httpMessage += FPSTR(HTTP_END);
+    webServer.send(200, "text/html", httpMessage);
+    delay(1000);
+    clearSavedConfig();
+  }
+  else
+  {
+    httpMessage += String(F("<h1>Warning</h1><b>This process will reset all settings to the default values and restart the device.  You may need to connect to the WiFi AP displayed on the panel to re-configure the device before accessing it again."));
+    httpMessage += String(F("<br/><hr><br/><form method='get' action='resetConfig'>"));
+    httpMessage += String(F("<br/><br/><button type='submit' name='confirm' value='yes'>reset all settings</button></form>"));
+    httpMessage += String(F("<br/><hr><br/><form method='get' action='/'>"));
+    httpMessage += String(F("<button type='submit'>return home</button></form>"));
+    httpMessage += FPSTR(HTTP_END);
+    webServer.send(200, "text/html", httpMessage);
   }
 }
