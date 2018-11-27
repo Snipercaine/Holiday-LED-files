@@ -20,3 +20,7 @@ int OTAport = 8266;
 #define LED_TYPE    WS2811 //change to match your LED type WS2812
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 #define NUM_LEDS    175 //change to match your setup
+
+/******* Debug **************/
+#define DEBUGSERIAL
+#define DEBUGTELNET  // Open a read-only telnet debug port

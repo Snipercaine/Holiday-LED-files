@@ -29,6 +29,10 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 
 //#define FASTLED_INTERRUPT_RETRY_COUNT 0
 
+#ifdef DEBUGTELNET
+  WiFiServer telnetServer(8023);
+  WiFiClient telnetClient;
+#endif
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -377,7 +381,11 @@ const char *getDeviceID() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  #ifdef DEBUGSERIAL
+    Serial.begin(115200);
+    while(!Serial) {} // Wait
+    Serial.println();
+  #endif  
   // build hostname with last 6 of MACID
   os_strcpy(mcuHostName, getDeviceID());
 
@@ -440,6 +448,13 @@ void setup() {
   httpUpdater.setup(&httpServer);
   httpServer.begin();
   MDNS.addService("http", "tcp", 80);
+
+  #ifdef DEBUGTELNET
+    // Setup telnet server for remote debug output
+    telnetServer.setNoDelay(true);
+    telnetServer.begin();
+    debugLn(String(F("Telnet: Started on port 8023 - IP:")) + WiFi.localIP().toString());
+  #endif
 
    ArduinoOTA.setPort(OTAport);
    ArduinoOTA.setHostname(mcuHostName);
@@ -647,7 +662,9 @@ void loop() {
 //    reconnect();
 //  }
 //  client.loop();  // commented out block when hand merging
-  
+  #ifdef DEBUGTELNET
+    handleTelnetClient();
+  #endif  
   httpServer.handleClient();
   
   while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0"))
@@ -1431,4 +1448,59 @@ void webHandleResetConfig()
     httpMessage += FPSTR(HTTP_END);
     webServer.send(200, "text/html", httpMessage);
   }
+}
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+// Telnet                                                        //
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+#ifdef DEBUGTELNET
+void handleTelnetClient()
+{ 
+  if (telnetServer.hasClient())
+  {
+    // client is connected
+    if (!telnetClient || !telnetClient.connected())
+    {
+      if (telnetClient)
+        telnetClient.stop();                   // client disconnected
+      telnetClient = telnetServer.available(); // ready for new client
+    }
+    else
+    {
+      telnetServer.available().stop(); // have client, block new connections
+    }
+  }
+  // Handle client input from telnet connection.
+  if (telnetClient && telnetClient.connected() && telnetClient.available())
+  {
+    // client input processing
+    while (telnetClient.available())
+    {
+      // Read data from telnet just to clear out the buffer
+      telnetClient.read();
+    }
+  }
+}
+#endif
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+// Serial and Telnet Log Handler                                 //
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+void debugLn(String debugText)
+{ 
+  String debugTimeText = "[+" + String(float(millis()) / 1000, 3) + "s] " + debugText;
+  #ifdef DEBUGSERIAL
+    Serial.println(debugTimeText);
+    Serial.flush();
+  #endif
+  #ifdef DEBUGTELNET
+    if (telnetClient.connected())
+    {
+      debugTimeText += "\r\n";
+      const size_t len = debugTimeText.length();
+      const char *buffer = debugTimeText.c_str();
+      telnetClient.write(buffer, len);
+      handleTelnetClient();
+    }
+  #endif
 }
