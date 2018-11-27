@@ -4,7 +4,11 @@
 
 #define mqtt_server "xxx.xxx.xx.xx" // Enter your MQTT server adderss or IP. I use my DuckDNS adddress (yourname.duckdns.org) in this field
 #define mqtt_user "xxxx" //enter your MQTT username
+#define mqtt_port "" //enter your MQTT Port
 #define mqtt_password "xxxx" //enter your password
+#define Param1 "" //
+#define Param2 "" //
+#define Param3 "" //
 
 #define espName "LEDstrip" //change this to whatever you want to call your device
 #define OTApassword "" //the password you will need to enter to upload remotely via the ArduinoIDE
