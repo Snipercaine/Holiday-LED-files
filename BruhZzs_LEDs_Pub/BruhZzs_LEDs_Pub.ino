@@ -19,8 +19,8 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-#include <SoftwareSerial.h>
-#include <TimeLib.h>                            // Time library
+//#include <SoftwareSerial.h>
+//#include <TimeLib.h>                            // Time library
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <FastLED.h>
