@@ -244,7 +244,7 @@ DEFINE_GRADIENT_PALETTE( Orange_to_Purple_gp ) {
 
 /****************************** MQTT TOPICS (change these topics as you wish)  ***************************************/
 
-//#define colorstatuspub "bruh/mqttstrip/colorstatus"
+//#define colorstatuspub "bruh/mqttstrip/colorstatus" 
 //#define setcolorsub "bruh/mqttstrip/setcolor"
 //#define setpowersub "bruh/mqttstrip/setpower"
 //#define seteffectsub "bruh/mqttstrip/seteffect"
@@ -1211,7 +1211,6 @@ void reconnect() {
 
       client.subscribe(setcolorSubTopic);
       client.subscribe(setbrightnessTopic);
-      //client.subscribe(setcolortemp);
       client.subscribe(setpowerSubTopic);
       client.subscribe(seteffectSubTopic);
       client.subscribe(setanimationspeedTopic);
