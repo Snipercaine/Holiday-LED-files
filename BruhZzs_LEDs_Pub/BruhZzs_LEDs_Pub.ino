@@ -1094,7 +1094,8 @@ void reconnect() {
   while (!client.connected()) {
     Serial.println("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     // Attempt to connect
-  if (client.connect(mcuHostName, mqtt_user, mqtt_password)) {
+  if (client.connect(mcuHostName, mqtt_user, mqtt_password, lwtTopic, 1, 1, "Offline")) {
+      client.publish(lwtTopic,"Online", true);
       Serial.println("MQTT: Connected");
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
