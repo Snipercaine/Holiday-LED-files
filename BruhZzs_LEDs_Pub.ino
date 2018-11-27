@@ -7,6 +7,7 @@
   |______/  | _| `.__| \______/  |__|  |__|    /__/     \__\ \______/      |__|      \______/  |__|  |__| /__/     \__\  |__|     |__|  \______/  |__| \__|
 This is the code I use for my MQTT LED Strip controlled from Home Assistant. It's a work in progress, but works great! Huge shout out to all the people I copied ideas from as a scoured around the internet. If you recoginze your code here and want credit, let me know and I'll get that added. Cheers! 
 */
+#include "config.h"           // rename sample_config.h and edit any values needed
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
@@ -21,24 +22,6 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 #include <ESP8266HTTPUpdateServer.h>
 
 #define FASTLED_INTERRUPT_RETRY_COUNT 0
-
-/************ WIFI and MQTT INFORMATION (CHANGE THESE FOR YOUR SETUP) ******************/
-#define wifi_ssid "xxxx" //enter your WIFI SSID
-#define wifi_password "xxxxx" //enter your WIFI Password
-
-#define mqtt_server "xxx.xxx.xx.xx" // Enter your MQTT server adderss or IP. I use my DuckDNS adddress (yourname.duckdns.org) in this field
-#define mqtt_user "xxxx" //enter your MQTT username
-#define mqtt_password "xxxx" //enter your password
-
-#define SENSORNAME "LEDstrip" //change this to whatever you want to call your device
-#define OTApassword "" //the password you will need to enter to upload remotely via the ArduinoIDE
-int OTAport = 8266;
-/************ FastLED Defintions ******************/
-
-#define DATA_PIN    D4 //on the NodeMCU 1.0, FastLED will default to the D5 pin after throwing an error during compiling. Leave as is. 
-#define LED_TYPE    WS2811 //change to match your LED type WS2812
-#define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
-#define NUM_LEDS    175 //change to match your setup
 
 
 ESP8266WebServer httpServer(80);
