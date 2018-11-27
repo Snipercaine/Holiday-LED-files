@@ -255,6 +255,7 @@ int Rcolor = 0;
 int Gcolor = 0;
 int Bcolor = 0;
 CRGB leds[NUM_LEDS];
+char mcuHostName[64]; 
 
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
@@ -336,7 +337,23 @@ PubSubClient client(espClient); //this needs to be unique for each controller
 
 ////////////////////////////////////////////////////////////
 
+const char *getDeviceID() {
+  char *identifier = new char[30];
+  os_strcpy(identifier, espName);
+  strcat_P(identifier, PSTR("-"));
+
+  char cidBuf[7];
+  sprintf(cidBuf, "%06X", ESP.getChipId());
+  os_strcat(identifier, cidBuf);
+
+  return identifier;
+}
+
 void setup() {
+
+  // build hostname with last 6 of MACID
+  os_strcpy(mcuHostName, getDeviceID());
+  
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   Serial.begin(115200);
 
@@ -363,13 +380,13 @@ void setup() {
   client.setServer(mqtt_server, 1883); //CHANGE PORT HERE IF NEEDED
   client.setCallback(callback);
 
-  MDNS.begin(SENSORNAME);
+  MDNS.begin(mcuHostName);
   httpUpdater.setup(&httpServer);
   httpServer.begin();
   MDNS.addService("http", "tcp", 80);
 
    ArduinoOTA.setPort(OTAport);
-   ArduinoOTA.setHostname(SENSORNAME);
+   ArduinoOTA.setHostname(mcuHostName);
    ArduinoOTA.setPassword((const char *)OTApassword);
    ArduinoOTA.onStart([]() {
     String type;
@@ -416,6 +433,7 @@ void setup_wifi() {
   Serial.println(wifi_ssid);
 
   WiFi.mode(WIFI_STA);
+  WiFi.hostname(mcuHostName);
   WiFi.begin(wifi_ssid, wifi_password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -1034,7 +1052,7 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-  if (client.connect(SENSORNAME, mqtt_user, mqtt_password)) {
+  if (client.connect(mcuHostName, mqtt_user, mqtt_password)) {
       Serial.println("connected");
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
