@@ -1,0 +1,6 @@
+config.h
+src/config.h
+ignored_files/*.*
+*.bin
+.pioenvs
+.piolibdeps
