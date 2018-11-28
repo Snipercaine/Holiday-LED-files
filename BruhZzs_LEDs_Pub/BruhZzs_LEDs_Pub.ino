@@ -19,8 +19,8 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-//#include <SoftwareSerial.h>
-//#include <TimeLib.h>                            // Time library
+#include <SoftwareSerial.h>
+#include <TimeLib.h>                            // Time library
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <FastLED.h>
@@ -29,10 +29,6 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 
 //#define FASTLED_INTERRUPT_RETRY_COUNT 0
 
-#ifdef DEBUGTELNET
-  WiFiServer telnetServer(8023);
-  WiFiClient telnetClient;
-#endif
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -244,7 +240,7 @@ DEFINE_GRADIENT_PALETTE( Orange_to_Purple_gp ) {
 
 /****************************** MQTT TOPICS (change these topics as you wish)  ***************************************/
 
-//#define colorstatuspub "bruh/mqttstrip/colorstatus" 
+//#define colorstatuspub "bruh/mqttstrip/colorstatus"
 //#define setcolorsub "bruh/mqttstrip/setcolor"
 //#define setpowersub "bruh/mqttstrip/setpower"
 //#define seteffectsub "bruh/mqttstrip/seteffect"
@@ -381,11 +377,7 @@ const char *getDeviceID() {
 }
 
 void setup() {
-  #ifdef DEBUGSERIAL
-    Serial.begin(115200);
-    while(!Serial) {} // Wait
-    Serial.println();
-  #endif  
+  Serial.begin(115200);
   // build hostname with last 6 of MACID
   os_strcpy(mcuHostName, getDeviceID());
 
@@ -427,9 +419,10 @@ void setup() {
   webServer.on("/", webHandleRoot);
   webServer.on("/saveConfig", webHandleSaveConfig);
   webServer.on("/resetConfig", webHandleResetConfig);
- // webServer.on("/firmware", webHandleFirmware);
- // webServer.on("/espfirmware", webHandleEspFirmware);
- // webServer.on("/reboot", webHandleReboot);
+  webServer.on("/LEDroutine", webHandleLEDroutine);
+  webServer.on("/espfirmware", webHandleEspFirmware);
+  webServer.on("/firmware", webHandleFirmware);
+// webServer.on("/reboot", webHandleReboot);
   //webServer.onNotFound(webHandleNotFound);
   webServer.begin();
 
@@ -448,13 +441,6 @@ void setup() {
   httpUpdater.setup(&httpServer);
   httpServer.begin();
   MDNS.addService("http", "tcp", 80);
-
-  #ifdef DEBUGTELNET
-    // Setup telnet server for remote debug output
-    telnetServer.setNoDelay(true);
-    telnetServer.begin();
-    debugLn(String(F("Telnet: Started on port 8023 - IP:")) + WiFi.localIP().toString());
-  #endif
 
    ArduinoOTA.setPort(OTAport);
    ArduinoOTA.setHostname(mcuHostName);
@@ -662,9 +648,7 @@ void loop() {
 //    reconnect();
 //  }
 //  client.loop();  // commented out block when hand merging
-  #ifdef DEBUGTELNET
-    handleTelnetClient();
-  #endif  
+  
   httpServer.handleClient();
   
   while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0"))
@@ -1211,6 +1195,7 @@ void reconnect() {
 
       client.subscribe(setcolorSubTopic);
       client.subscribe(setbrightnessTopic);
+      //client.subscribe(setcolortemp);
       client.subscribe(setpowerSubTopic);
       client.subscribe(seteffectSubTopic);
       client.subscribe(setanimationspeedTopic);
@@ -1310,8 +1295,8 @@ void webHandleRoot()
 
 
 
-  httpMessage += String(F("<hr><form method='get' action='Paterns'>"));
-  httpMessage += String(F("<button type='submit'>Run LED paterns</button></form>"));
+  httpMessage += String(F("<hr><form method='get' action='LEDroutine'>"));
+  httpMessage += String(F("<button type='submit'>Run LED effects</button></form>"));
 
   httpMessage += String(F("<hr><form method='get' action='reboot'>"));
   httpMessage += String(F("<button type='submit'>reboot device</button></form>"));
@@ -1319,6 +1304,9 @@ void webHandleRoot()
   httpMessage += String(F("<hr><form method='get' action='resetConfig'>"));
   httpMessage += String(F("<button type='submit'>factory reset settings</button></form>"));
 
+ httpMessage += String(F("<hr><form method='get' action='firmware'>"));
+  httpMessage += String(F("<button type='submit'>update firmware</button></form>"));
+  
   httpMessage += String(F("<hr><b>MQTT Status: </b>"));
   if (client.connected())
   { // Check MQTT connection
@@ -1416,9 +1404,69 @@ void webHandleSaveConfig()
   }
 }
 
+void webHandleLEDroutine(){
+
+ 
+if (webServer.arg("Seteffect") != ""){
+  setEffect = webServer.arg("Seteffect");
+  
+  }
+
+ String httpMessage = FPSTR(HTTP_HEAD);
+  httpMessage.replace("{v}", String(espName));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+  httpMessage += FPSTR(HTTP_HEAD_END);
+
+ 
+    httpMessage += String(F("<h1>LED effects</h1><b> Clicking an effect should trigger it on your device"));
+    httpMessage += String(F("<br/><hr><br/><form method='get' action='/LEDroutine'>"));
+
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Christmas'>Christmas</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='StPatty'>St Patty</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Valentine'>Valentine</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Turkey Day'>Turkey Day</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='USA'>USA</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Independence'>Independence</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Halloween'>Halloween</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Go Blue'>Go Blue</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Hail'>Hail</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Touchdown'>Touchdown</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Punkin'>Punkin</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Lovey Day'>Lovey Day</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Holly Jolly'>Holly Jolly Day</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Sinelon'>Sinelon</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Juggle'>Juggle</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Confetti'>Confetti</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Rainbow'>Rainbow</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Rainbow with Glitter'>Rainbow with Glitter</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Glitter'>Glitter</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='BPM'>BPM</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Solid'>Solid</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Twinkle'>Twinkle</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Dots'>Dots</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Lightning'>Lightning</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Police One'>Police One</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Police All'>Police All</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Candy Cane'>Candy Cane</button>​"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Cyclon Rainbow'>Cyclon Rainbow</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Fire'>Fire</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Easter'>Easter</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Ripple'>Ripple</button>"));
+    httpMessage += String(F("</form>"));
+    httpMessage += String(F("<br/><hr><br/><form method='get' action='/'>"));
+    httpMessage += String(F("<button type='submit'>return home</button></form>"));
+    httpMessage += FPSTR(HTTP_END);
+    webServer.send(200, "text/html", httpMessage);
+ 
+
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void webHandleResetConfig()
-{ // http://plate02/resetConfig
+{ 
  
   String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", String(espName));
@@ -1449,57 +1497,79 @@ void webHandleResetConfig()
   }
 }
 
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-// Telnet                                                        //
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-#ifdef DEBUGTELNET
-void handleTelnetClient()
-{ 
-  if (telnetServer.hasClient())
-  {
-    // client is connected
-    if (!telnetClient || !telnetClient.connected())
-    {
-      if (telnetClient)
-        telnetClient.stop();                   // client disconnected
-      telnetClient = telnetServer.available(); // ready for new client
-    }
-    else
-    {
-      telnetServer.available().stop(); // have client, block new connections
-    }
-  }
-  // Handle client input from telnet connection.
-  if (telnetClient && telnetClient.connected() && telnetClient.available())
-  {
-    // client input processing
-    while (telnetClient.available())
-    {
-      // Read data from telnet just to clear out the buffer
-      telnetClient.read();
-    }
-  }
-}
-#endif
+void webHandleFirmware()
+{// firmware
+ 
+  String httpMessage = FPSTR(HTTP_HEAD);
+  httpMessage.replace("{v}", (String(espName) + " update"));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+  httpMessage += FPSTR(HTTP_HEAD_END);
+  httpMessage += String(F("<h1>")) + String(espName) + String(F(" firmware</h1>"));
 
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-// Serial and Telnet Log Handler                                 //
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-void debugLn(String debugText)
-{ 
-  String debugTimeText = "[+" + String(float(millis()) / 1000, 3) + "s] " + debugText;
-  #ifdef DEBUGSERIAL
-    Serial.println(debugTimeText);
-    Serial.flush();
-  #endif
-  #ifdef DEBUGTELNET
-    if (telnetClient.connected())
-    {
-      debugTimeText += "\r\n";
-      const size_t len = debugTimeText.length();
-      const char *buffer = debugTimeText.c_str();
-      telnetClient.write(buffer, len);
-      handleTelnetClient();
-    }
-  #endif
+
+  httpMessage += String(F("<form method='get' action='/espfirmware'>"));
+ 
+ 
+  httpMessage += String(F("<b>Update ESP8266 from file</b><input type='file' id='espSelect' name='espSelect' accept='.bin'>"));
+  httpMessage += String(F("<br/><br/><button type='submit' id='espUploadSubmit' onclick='ackEspUploadSubmit()'>Update ESP from file</button></form>"));
+
+ 
+  // Javascript to collect the filesize of the LCD upload and send it to /tftFileSize
+  httpMessage += String(F("<script>function handleLcdFileSelect(evt) {"));
+  httpMessage += String(F("var uploadFile = evt.target.files[0];"));
+
+  httpMessage += String(F("function handleEspFileSelect(evt) {var uploadFile = evt.target.files[0];document.getElementById('espUploadSubmit').innerHTML = 'Upload ESP firmware ' + uploadFile.name;}"));
+  httpMessage += String(F("function ackEspUploadSubmit() {document.getElementById('espUploadSubmit').innerHTML = 'Uploading ESP firmware...';}"));
+  httpMessage += String(F("document.getElementById('espSelect').addEventListener('change', handleEspFileSelect, false);</script>"));
+
+  httpMessage += FPSTR(HTTP_END);
+  webServer.send(200, "text/html", httpMessage);
+}
+
+void webHandleEspFirmware()
+{ //espfirmware
+
+
+  String httpMessage = FPSTR(HTTP_HEAD);
+  httpMessage.replace("{v}", (String(espName) + " ESP update"));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+  httpMessage += String(F("<meta http-equiv='refresh' content='60;url=/' />"));
+  httpMessage += FPSTR(HTTP_HEAD_END);
+  httpMessage += String(F("<h1>"));
+  httpMessage += String(espName) + " ESP update";
+  httpMessage += String(F("</h1>"));
+  httpMessage += "<br/>Updating ESP firmware from: " + String(webServer.arg("espFirmware"));
+  httpMessage += FPSTR(HTTP_END);
+  webServer.send(200, "text/html", httpMessage);
+
+ 
+  startEspOTA(webServer.arg("espFirmware"));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void startEspOTA(String espOtaUrl)
+{ // Update ESP firmware from HTTP
+
+  WiFiUDP::stopAll(); // Keep mDNS responder from breaking things
+
+  t_httpUpdate_return returnCode = ESPhttpUpdate.update(espOtaUrl);
+  switch (returnCode)
+  {
+  case HTTP_UPDATE_FAILED:
+
+    break;
+
+  case HTTP_UPDATE_NO_UPDATES:
+
+    break;
+
+  case HTTP_UPDATE_OK:
+
+    espReset();
+  }
+  delay(5000);
+
 }
