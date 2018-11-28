@@ -1412,6 +1412,11 @@ if (webServer.arg("Seteffect") != ""){
   
   }
 
+  if (webServer.arg("Seteffect") == "Off"){
+ setPower = "OFF";
+  
+  }
+
  String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", String(espName));
   httpMessage += FPSTR(HTTP_SCRIPT);
@@ -1422,7 +1427,7 @@ if (webServer.arg("Seteffect") != ""){
  
     httpMessage += String(F("<h1>LED effects</h1><b> Clicking an effect should trigger it on your device"));
     httpMessage += String(F("<br/><hr><br/><form method='get' action='/LEDroutine'>"));
-
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='Off'>Off</button>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='Christmas'>Christmas</button>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='StPatty'>St Patty</button>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='Valentine'>Valentine</button>"));
