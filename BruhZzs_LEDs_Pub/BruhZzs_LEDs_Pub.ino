@@ -7,7 +7,7 @@
   |______/  | _| `.__| \______/  |__|  |__|    /__/     \__\ \______/      |__|      \______/  |__|  |__| /__/     \__\  |__|     |__|  \______/  |__| \__|
 This is the code I use for my MQTT LED Strip controlled from Home Assistant. It's a work in progress, but works great! Huge shout out to all the people I copied ideas from as a scoured around the internet. If you recoginze your code here and want credit, let me know and I'll get that added. Cheers! 
 */
-#include "sample_config.h"           // rename sample_config.h and edit any values needed
+#include "config.h"           // rename sample_config.h and edit any values needed
 #include <FS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
@@ -19,8 +19,8 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-#include <SoftwareSerial.h>
-#include <TimeLib.h>                            // Time library
+//#include <SoftwareSerial.h>
+//#include <TimeLib.h>                            // Time library
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <FastLED.h>
@@ -29,6 +29,10 @@ This is the code I use for my MQTT LED Strip controlled from Home Assistant. It'
 
 //#define FASTLED_INTERRUPT_RETRY_COUNT 0
 
+#ifdef DEBUGTELNET
+  WiFiServer telnetServer(8023);
+  WiFiClient telnetClient;
+#endif
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -240,7 +244,7 @@ DEFINE_GRADIENT_PALETTE( Orange_to_Purple_gp ) {
 
 /****************************** MQTT TOPICS (change these topics as you wish)  ***************************************/
 
-//#define colorstatuspub "bruh/mqttstrip/colorstatus"
+//#define colorstatuspub "bruh/mqttstrip/colorstatus" 
 //#define setcolorsub "bruh/mqttstrip/setcolor"
 //#define setpowersub "bruh/mqttstrip/setpower"
 //#define seteffectsub "bruh/mqttstrip/seteffect"
@@ -377,7 +381,11 @@ const char *getDeviceID() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  #ifdef DEBUGSERIAL
+    Serial.begin(115200);
+    while(!Serial) {} // Wait
+    Serial.println();
+  #endif  
   // build hostname with last 6 of MACID
   os_strcpy(mcuHostName, getDeviceID());
 
@@ -419,7 +427,7 @@ void setup() {
   webServer.on("/", webHandleRoot);
   webServer.on("/saveConfig", webHandleSaveConfig);
   webServer.on("/resetConfig", webHandleResetConfig);
-  webServer.on("/LEDroutine", webHandleLEDroutine);
+ // webServer.on("/firmware", webHandleFirmware);
  // webServer.on("/espfirmware", webHandleEspFirmware);
  // webServer.on("/reboot", webHandleReboot);
   //webServer.onNotFound(webHandleNotFound);
@@ -440,6 +448,13 @@ void setup() {
   httpUpdater.setup(&httpServer);
   httpServer.begin();
   MDNS.addService("http", "tcp", 80);
+
+  #ifdef DEBUGTELNET
+    // Setup telnet server for remote debug output
+    telnetServer.setNoDelay(true);
+    telnetServer.begin();
+    debugLn(String(F("Telnet: Started on port 8023 - IP:")) + WiFi.localIP().toString());
+  #endif
 
    ArduinoOTA.setPort(OTAport);
    ArduinoOTA.setHostname(mcuHostName);
@@ -647,7 +662,9 @@ void loop() {
 //    reconnect();
 //  }
 //  client.loop();  // commented out block when hand merging
-  
+  #ifdef DEBUGTELNET
+    handleTelnetClient();
+  #endif  
   httpServer.handleClient();
   
   while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0"))
@@ -1194,7 +1211,6 @@ void reconnect() {
 
       client.subscribe(setcolorSubTopic);
       client.subscribe(setbrightnessTopic);
-      //client.subscribe(setcolortemp);
       client.subscribe(setpowerSubTopic);
       client.subscribe(seteffectSubTopic);
       client.subscribe(setanimationspeedTopic);
@@ -1294,8 +1310,8 @@ void webHandleRoot()
 
 
 
-  httpMessage += String(F("<hr><form method='get' action='LEDroutine'>"));
-  httpMessage += String(F("<button type='submit'>Run LED effects</button></form>"));
+  httpMessage += String(F("<hr><form method='get' action='Paterns'>"));
+  httpMessage += String(F("<button type='submit'>Run LED paterns</button></form>"));
 
   httpMessage += String(F("<hr><form method='get' action='reboot'>"));
   httpMessage += String(F("<button type='submit'>reboot device</button></form>"));
@@ -1400,69 +1416,9 @@ void webHandleSaveConfig()
   }
 }
 
-void webHandleLEDroutine(){
-
- 
-if (webServer.arg("Seteffect") != ""){
-  setEffect = webServer.arg("Seteffect");
-  
-  }
-
- String httpMessage = FPSTR(HTTP_HEAD);
-  httpMessage.replace("{v}", String(espName));
-  httpMessage += FPSTR(HTTP_SCRIPT);
-  httpMessage += FPSTR(HTTP_STYLE);
-  httpMessage += String(LED_STYLE);
-  httpMessage += FPSTR(HTTP_HEAD_END);
-
- 
-    httpMessage += String(F("<h1>LED effects</h1><b> Clicking an effect should trigger it on your device"));
-    httpMessage += String(F("<br/><hr><br/><form method='get' action='/LEDroutine'>"));
-
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Christmas'>Christmas</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='StPatty'>St Patty</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Valentine'>Valentine</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='TurkeyDay'>Turkey Day</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='USA'>USA</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Independence'>Independence</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Halloween'>Halloween</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='GoBlue'>Go Blue</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Hail'>Hail</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Touchdown'>Touchdown</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Punkin'>Punkin</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='LoveyDay'>Lovey Day</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='HollyJolly'>Holly Jolly Day</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Sinelon'>Sinelon</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Juggle'>Juggle</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Confetti'>Confetti</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Rainbow'>Rainbow</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='RainbowwithGlitter'>Rainbow with Glitter</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Glitter'>Glitter</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='BPM'>BPM</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Solid'>Solid</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Twinkle'>Twinkle</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Dots'>Dots</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Lightning'>Lightning</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='PoliceOne'>Police One</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='PoliceAll'>Police All</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='CandyCane'>Candy Cane</button>​"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='CyclonRainbow'>Cyclon Rainbow</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Fire'>Fire</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Easter'>Easter</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='Ripple'>Ripple</button>"));
-    httpMessage += String(F("</form>"));
-    httpMessage += String(F("<br/><hr><br/><form method='get' action='/'>"));
-    httpMessage += String(F("<button type='submit'>return home</button></form>"));
-    httpMessage += FPSTR(HTTP_END);
-    webServer.send(200, "text/html", httpMessage);
- 
-
-
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void webHandleResetConfig()
-{ 
+{ // http://plate02/resetConfig
  
   String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", String(espName));
@@ -1491,4 +1447,59 @@ void webHandleResetConfig()
     httpMessage += FPSTR(HTTP_END);
     webServer.send(200, "text/html", httpMessage);
   }
+}
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+// Telnet                                                        //
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+#ifdef DEBUGTELNET
+void handleTelnetClient()
+{ 
+  if (telnetServer.hasClient())
+  {
+    // client is connected
+    if (!telnetClient || !telnetClient.connected())
+    {
+      if (telnetClient)
+        telnetClient.stop();                   // client disconnected
+      telnetClient = telnetServer.available(); // ready for new client
+    }
+    else
+    {
+      telnetServer.available().stop(); // have client, block new connections
+    }
+  }
+  // Handle client input from telnet connection.
+  if (telnetClient && telnetClient.connected() && telnetClient.available())
+  {
+    // client input processing
+    while (telnetClient.available())
+    {
+      // Read data from telnet just to clear out the buffer
+      telnetClient.read();
+    }
+  }
+}
+#endif
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+// Serial and Telnet Log Handler                                 //
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+void debugLn(String debugText)
+{ 
+  String debugTimeText = "[+" + String(float(millis()) / 1000, 3) + "s] " + debugText;
+  #ifdef DEBUGSERIAL
+    Serial.println(debugTimeText);
+    Serial.flush();
+  #endif
+  #ifdef DEBUGTELNET
+    if (telnetClient.connected())
+    {
+      debugTimeText += "\r\n";
+      const size_t len = debugTimeText.length();
+      const char *buffer = debugTimeText.c_str();
+      telnetClient.write(buffer, len);
+      handleTelnetClient();
+    }
+  #endif
 }
