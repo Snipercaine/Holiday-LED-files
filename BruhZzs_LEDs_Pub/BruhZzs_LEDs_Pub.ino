@@ -422,7 +422,7 @@ void setup() {
   webServer.on("/LEDroutine", webHandleLEDroutine);
   webServer.on("/espfirmware", webHandleEspFirmware);
   webServer.on("/firmware", webHandleFirmware);
-// webServer.on("/reboot", webHandleReboot);
+  webServer.on("/reboot", webHandleReboot);
   //webServer.onNotFound(webHandleNotFound);
   webServer.begin();
 
@@ -1284,7 +1284,7 @@ void webHandleRoot()
   httpMessage += String(F("</h1>"));
 
   httpMessage += String(F("<form method='POST' action='saveConfig'>"));
-  httpMessage += String(F("<b>WiFi SSID</b> <i><small>(required)</small></i><input id='wifiSSID' required name='wifiSSID' maxlength=32 placeholder='WiFi SSID' value='")) + String(WiFi.SSID()) + "'>";
+  httpMessage += String(F("<b>WiFi SSID </b> <i><small>(required)</small></i><input id='wifiSSID' required name='wifiSSID' maxlength=32 placeholder='WiFi SSID' value='")) + String(WiFi.SSID()) + "'>";
   httpMessage += String(F("<br/><b>WiFi Password</b> <i><small>(required)</small></i><input id='wifiPass' required name='wifiPass' type='password' maxlength=64 placeholder='WiFi Password' value='")) + String("********") + "'>";
   httpMessage += String(F("<br/><br/><b>LED Node Name</b> <i><small>(required)</small></i><input id='espName' required name='espName' maxlength=15 placeholder='LED Node Name' value='")) + String(espName) + "'>";
  httpMessage += String(F("<br/><br/><b>MQTT Broker</b> <i><small>(required)</small></i><input id='mqtt_server' required name='mqtt_server' maxlength=63 placeholder='mqtt_server' value='")) + String(mqtt_server) + "'>";
@@ -1307,7 +1307,7 @@ void webHandleRoot()
  httpMessage += String(F("<hr><form method='get' action='firmware'>"));
   httpMessage += String(F("<button type='submit'>update firmware</button></form>"));
   
-  httpMessage += String(F("<hr><b>MQTT Status: </b>"));
+  httpMessage += String(F("<hr><b>MQTT Status:  TESTING</b>"));
   if (client.connected())
   { // Check MQTT connection
     httpMessage += String(F("Connected"));
@@ -1572,4 +1572,19 @@ void startEspOTA(String espOtaUrl)
   }
   delay(5000);
 
+}
+void webHandleReboot()
+{ 
+  String httpMessage = FPSTR(HTTP_HEAD);
+  httpMessage.replace("{v}", (String(espName) + "  reboot"));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+  httpMessage += String(F("<meta http-equiv='refresh' content='10;url=/' />"));
+  httpMessage += FPSTR(HTTP_HEAD_END);
+  httpMessage += String(F("<h1>")) + String(espName) + String(F("</h1>"));
+  httpMessage += String(F("<br/>Rebooting device"));
+  httpMessage += FPSTR(HTTP_END);
+
+  espReset();
 }
