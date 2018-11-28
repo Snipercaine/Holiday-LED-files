@@ -377,6 +377,7 @@ void setup() {
     while(!Serial) {} // Wait
     Serial.println();
   #endif  
+  debugLn(String(F("APP: Holiday Lights - Build: ")) + F(__DATE__) + " " +  F(__TIME__));
   // build hostname with last 6 of MACID
   os_strcpy(mcuHostName, getDeviceID());
 
@@ -399,6 +400,8 @@ void setup() {
 
 
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
+
+  debugLn(F("FSL: Setting up LEDS"));
 
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
@@ -510,7 +513,10 @@ void setup_wifi() {
   
   
   // Assign our hostname (default esp_name + left 6 MAC) before connecting to WiFi
+  debugLn(String(F("WIFI: Setting hostname to ")) + mcuHostName);
   WiFi.hostname(mcuHostName);
+
+
 
   if ( WiFi.status() != WL_CONNECTED) /// (String(wifiSSID) == "")
   { // If the sketch has no defined a static wifiSSID to connect to,
