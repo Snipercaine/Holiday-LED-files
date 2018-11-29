@@ -806,11 +806,11 @@ void mqttConnect()
     // Loop until we're reconnected to MQTT
   while (!client.connected())
   {
-     webServer.handleClient();
+
        static uint8_t mqttReconnectCount = 0;
     mqttClientId = String(espName);
     // Set keepAlive, cleanSession, timeout
-    client.setOptions(5, true, 5000);
+  
   Serial.println("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     if (client.connect(espName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament

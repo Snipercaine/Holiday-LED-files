@@ -346,12 +346,15 @@ void webHandleLEDroutine(){
 
  
 if (webServer.arg("Seteffect") != ""){
+  client.publish(setpowerPubTopic, "ON");
+ setPower = "ON";
   setEffect = webServer.arg("Seteffect");
-  setPower = "ON";
+
   }
 
   if (webServer.arg("Seteffect") == "Off"){
- setPower = "OFF";
+      client.publish(setpowerPubTopic, "OFF");
+      setPower = "OFF";
   
   }
 
