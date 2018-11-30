@@ -192,6 +192,13 @@ void setup_wifi() {
   Serial.println(String(mqtt_server));
     
 
+ // if (strlen(mqtt_server) !=  "xxx.xxx.xxx.xxx"){
+ // client.begin(mqtt_server, atoi(mqtt_port), wifiClient);
+ // client.onMessage(mqttCallback);
+ //  mqttConnect();
+
+ // }
+
 }
 
 

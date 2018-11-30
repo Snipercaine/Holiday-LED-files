@@ -72,18 +72,19 @@ void setup() {
   //webServer.onNotFound(webHandleNotFound);
   webServer.begin();
 
-  
+
+  Serial.println(String(mqtt_server));
+    
+
+
+
+
   gPal = HeatColors_p; //for FIRE
 
   fill_solid(leds, NUM_LEDS, CRGB(255, 0, 0)); //Startup LED Lights
   FastLED.show();
 
- // client.setServer(mqtt_server, 1883); //CHANGE PORT HERE IF NEEDED
- // client.setCallback(callback);
-  
-  client.begin(mqtt_server, atoi(mqtt_port), wifiClient);
-  client.onMessage(mqttCallback);
-   mqttConnect();
+
   //reconnect()
 
   MDNS.begin(mcuHostName);
@@ -133,7 +134,21 @@ void setup() {
   telnetServer.setNoDelay(true);
   telnetServer.begin();
    Serial.println(String(F("TELNET: debug server enabled at telnet:")) + WiFi.localIP().toString());
+
+ Serial.println( "MQTTServer");
+  
+  Serial.println( String(mqtt_server));
  
+ if (mqtt_server[0] !=0){
+  client.begin(mqtt_server, atoi(mqtt_port), wifiClient);
+  client.onMessage(mqttCallback);
+   mqttConnect();
+ }
+ 
+  // client.setServer(mqtt_server, 1883); //CHANGE PORT HERE IF NEEDED
+ // client.setCallback(callback);
+ 
+
 }
 
 
