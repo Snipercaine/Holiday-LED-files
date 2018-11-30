@@ -208,7 +208,7 @@ String setColorTemp;
 int Rcolor = 0;
 int Gcolor = 0;
 int Bcolor = 0;
-CRGB leds[NUM_LEDS];
+CRGB leds[NUM_LEDS8];
 char mcuHostName[64]; 
 char lwtTopic[96];  
 char colorstatusPubTopic[96];    
@@ -223,6 +223,7 @@ char setbrightnessPubTopic[96];
 char setanimationspeedTopic[96];   
 String mqttClientId; 
 bool Mqttconnected = 0 ;
+char NumberLEDUser[6]= "2";
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
 CRGBPalette16 hailPalettestriped; //for Hail
@@ -270,8 +271,8 @@ uint8_t ledlen;
 int lightningcounter = 0;
 
 /********FOR FUNKBOX EFFECTS**********/
-int idex = 0;                //-LED INDEX (0 to NUM_LEDS-1
-int TOP_INDEX = int(NUM_LEDS / 2);
+int idex = 0;                //-LED INDEX (0 to NumberLEDUser-1
+int TOP_INDEX = int(String(NumberLEDUser).toInt() / 2);
 int thissat = 255;           //-FX LOOPS DELAY VAR
 
 //////////////////add thishue__ for Police All custom effects here/////////////////////////////////////////////////////////
@@ -283,7 +284,7 @@ uint8_t thishueLovey = 0;
 int antipodal_index(int i) {
   int iN = i + TOP_INDEX;
   if (i >= TOP_INDEX) {
-    iN = ( i + TOP_INDEX ) % NUM_LEDS;
+    iN = ( i + TOP_INDEX ) % String(NumberLEDUser).toInt();
   }
   return iN;
 }
