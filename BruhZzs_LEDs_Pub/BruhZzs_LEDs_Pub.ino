@@ -128,12 +128,11 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-#ifdef DEBUGTELNET
+
   // Setup telnet server for remote debug output
   telnetServer.setNoDelay(true);
   telnetServer.begin();
    Serial.println(String(F("TELNET: debug server enabled at telnet:")) + WiFi.localIP().toString());
-#endif
  
 }
 
@@ -234,12 +233,7 @@ void loop() {
   }
   webServer.handleClient(); // webServer loop
 
-  if (!client.connected())
-  { // Check MQTT connection
-    mqttConnect();
-  }
-  
-  client.loop();
+
   
   
   ArduinoOTA.handle();
@@ -653,14 +647,32 @@ void loop() {
   if (animationspeed > 0 && animationspeed < 150) {  //Sets animation speed based on receieved value
     FastLED.delay(1000 / animationspeed);
   }
-#ifdef DEBUGTELNET
+
   // telnetClient loop
   handleTelnetClient();
-#endif
+if (mqtt_server[0] !=0){
+    if (!client.connected())
+  { // Check MQTT connection
+    mqttConnect();
+  }
+  
+   client.loop();
+  }else{
+//      FastLED.clear (); //Turns off startup LEDs after connection is made
+ //     FastLED.show();
+
+    }
+    
+   
+   
+  
+  
 }
 
 
-////////////////////////place setup__Palette and __Palettestriped custom functions here - for Candy Cane effects ///////////////// 
+/////////////////
+
+  ///////place setup__Palette and __Palettestriped custom functions here - for Candy Cane effects ///////////////// 
 ///////You can use up to 4 colors and change the pattern of A's AB's B's and BA's as you like//////////////
 
 void setupStripedPalette( CRGB A, CRGB AB, CRGB B, CRGB BA)
@@ -803,14 +815,18 @@ void mqttConnect()
       ArduinoOTA.handle();
     }
   }
+  Serial.println( "MQTTServer");
+  
+  Serial.println( String(mqtt_server));
     // Loop until we're reconnected to MQTT
+    if (mqtt_server[0] != 0){
   while (!client.connected())
   {
 
        static uint8_t mqttReconnectCount = 0;
     mqttClientId = String(espName);
     // Set keepAlive, cleanSession, timeout
-  
+  if(String(mqtt_server)!=""){
   Serial.println("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     if (client.connect(espName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
@@ -838,6 +854,10 @@ void mqttConnect()
         webServer.handleClient();
         ArduinoOTA.handle();
       }
+    }}}
+  }else{
+      FastLED.clear (); //Turns off startup LEDs after connection is made
+      FastLED.show();
+
     }
-  }
 }
