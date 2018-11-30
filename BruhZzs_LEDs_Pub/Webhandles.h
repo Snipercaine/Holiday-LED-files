@@ -497,32 +497,3 @@ void webHandleEspFirmware()
  
   startEspOTA(webServer.arg("espFirmware"));
 }
-#ifdef DEBUGTELNET
-void handleTelnetClient()
-{ // Basic telnet client handling code from: https://gist.github.com/tablatronix/4793677ca748f5f584c95ec4a2b10303
-  if (telnetServer.hasClient())
-  {
-    // client is connected
-    if (!telnetClient || !telnetClient.connected())
-    {
-      if (telnetClient)
-        telnetClient.stop();                   // client disconnected
-      telnetClient = telnetServer.available(); // ready for new client
-    }
-    else
-    {
-      telnetServer.available().stop(); // have client, block new conections
-    }
-  }
-  // Handle client input from telnet connection.
-  if (telnetClient && telnetClient.connected() && telnetClient.available())
-  {
-    // client input processing
-    while (telnetClient.available())
-    {
-      // Read data from telnet just to clear out the buffer
-      telnetClient.read();
-    }
-  }
-}
-#endif

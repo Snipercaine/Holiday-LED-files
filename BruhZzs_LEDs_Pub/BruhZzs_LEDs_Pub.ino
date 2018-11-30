@@ -12,7 +12,7 @@
 #include <ArduinoJson.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
-#include <TimeLib.h>                            // Time library
+//#include <TimeLib.h>                            // Time library
 #include <ESP8266WiFi.h>
 #include <MQTT.h>
 #include <FastLED.h>
@@ -25,11 +25,19 @@ WiFiClient espClient; //this needs to be unique for each controller
 MQTTClient client(256);
 ////////////////////////////////////////////////////////////
 #include "Webhandles.h" 
-
+#ifdef DEBUGTELNET
+  WiFiServer telnetServer(23);
+  WiFiClient telnetClient;
+#endif
 
 
 void setup() {
-  Serial.begin(115200);
+  #ifdef DEBUGSERIAL
+    Serial.begin(115200);
+    while(!Serial) {} // Wait
+    Serial.println();
+  #endif 
+  debugLn(String(F("APP: LED-ez - Build: ")) + F(__DATE__) + " " +  F(__TIME__));
   // build hostname with last 6 of MACID
   os_strcpy(mcuHostName, getDeviceID());
 
@@ -648,8 +656,9 @@ void loop() {
     FastLED.delay(1000 / animationspeed);
   }
 
-  // telnetClient loop
-  handleTelnetClient();
+  #ifdef DEBUGTELNET
+    handleTelnetClient();
+  #endif
 if (mqtt_server[0] !=0){
     if (!client.connected())
   { // Check MQTT connection
@@ -860,4 +869,59 @@ void mqttConnect()
       FastLED.show();
 
     }
+}
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+// Telnet                                                        //
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+#ifdef DEBUGTELNET
+void handleTelnetClient()
+{ 
+  if (telnetServer.hasClient())
+  {
+    // client is connected
+    if (!telnetClient || !telnetClient.connected())
+    {
+      if (telnetClient)
+        telnetClient.stop();                   // client disconnected
+      telnetClient = telnetServer.available(); // ready for new client
+    }
+    else
+    {
+      telnetServer.available().stop(); // have client, block new connections
+    }
+  }
+  // Handle client input from telnet connection.
+  if (telnetClient && telnetClient.connected() && telnetClient.available())
+  {
+    // client input processing
+    while (telnetClient.available())
+    {
+      // Read data from telnet just to clear out the buffer
+      telnetClient.read();
+    }
+  }
+}
+#endif
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+// Serial and Telnet Log Handler                                 //
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+void debugLn(String debugText)
+{ 
+  String debugTimeText = "[+" + String(float(millis()) / 1000, 3) + "s] " + debugText;
+  #ifdef DEBUGSERIAL
+    Serial.println(debugTimeText);
+    Serial.flush();
+  #endif
+  #ifdef DEBUGTELNET
+    if (telnetClient.connected())
+    {
+      debugTimeText += "\r\n";
+      const size_t len = debugTimeText.length();
+      const char *buffer = debugTimeText.c_str();
+      telnetClient.write(buffer, len);
+      handleTelnetClient();
+    }
+  #endif
 }
