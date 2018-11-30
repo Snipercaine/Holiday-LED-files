@@ -135,7 +135,7 @@ void setup_wifi() {
     WiFiManagerParameter custom_mqtt_port("mqtt_port", "MQTT Port", mqtt_port, 5, " maxlength=5 type='number'");
     WiFiManagerParameter custom_mqtt_user("mqtt_user", "MQTT User", mqtt_user, 31, " maxlength=31");
     WiFiManagerParameter custom_mqtt_password("mqtt_password", "MQTT Password", mqtt_password, 31, " maxlength=31 type='password'");
-//    WiFiManagerParameter custom_LEDtpe("LEDTPE", "LED Type WS2811", Param1, 63, " maxlength=39");
+    WiFiManagerParameter custom_LEDtpe("LEDTPE", "LED Type WS2811", LED_TYPEUSER, 63, " maxlength=39");
  //   WiFiManagerParameter custom_mqttColororder("COLOR_ORDER", "RGB", Param2, 31, " maxlength=39");
     WiFiManagerParameter custom_mqttNumleds("NUM_LEDS", "Number of LED's", NumberLEDUser, 5, " maxlength=5 type='number'");
     WiFiManagerParameter custom_espName("Sensor", "Devicename", espName, 63, " maxlength=39");
@@ -156,7 +156,7 @@ void setup_wifi() {
     wifiManager.addParameter(&custom_mqtt_port);
     wifiManager.addParameter(&custom_mqtt_user);
     wifiManager.addParameter(&custom_mqtt_password);
-  //  wifiManager.addParameter(&custom_LEDtpe);
+    wifiManager.addParameter(&custom_LEDtpe);
   //  wifiManager.addParameter(&custom_mqttColororder);
     wifiManager.addParameter(&custom_mqttNumleds);
     wifiManager.addParameter(&custom_espName);
@@ -188,7 +188,8 @@ void setup_wifi() {
     strcpy(mqtt_user, custom_mqtt_user.getValue());
     strcpy(mqtt_password, custom_mqtt_password.getValue());
     strcpy(espName, custom_espName.getValue());
-     strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
+    strcpy(LED_TYPEUSER, custom_LEDtpe.getValue());
+    strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
   
   Serial.println(String(mqtt_server));
     

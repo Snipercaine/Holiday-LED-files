@@ -14,20 +14,17 @@ char mqtt_user[32] = "DVES_USER";
 char mqtt_password[32] = "DVES_PASS";
 
 //const int NUM_LEDS =4;
-//char LED_TYPE[10] ="WS2811";
+
 
 
 #define DATA_PIN    D4 //on the NodeMCU 1.0, FastLED will default to the D5 pin after throwing an error during compiling. Leave as is. 
 #define LED_TYPE    WS2811 //change to match your LED type WS2812
+#define LED_TYPE1    WS2812 //change to match your LED type WS2812
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
-#define NUM_LEDS8    8 //change to match your setup
-#define NUM_LEDS7    7
-#define NUM_LEDS6    6
-#define NUM_LEDS5    5
-#define NUM_LEDS4    4
-#define NUM_LEDS3    3
-#define NUM_LEDS2    2
-#define NUM_LEDS1    1
+#define COLOR_ORDER1 GRB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
+
+#define NUM_LEDS8    1000 //change to match your setup
+
 
 #define espName "LEDstrip" //change this to whatever you want to call your device
 #define OTApassword "" //the password you will need to enter to upload remotely via the ArduinoIDE

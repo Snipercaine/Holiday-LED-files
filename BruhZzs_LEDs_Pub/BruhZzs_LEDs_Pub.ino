@@ -135,59 +135,18 @@ void setup() {
   // client.setServer(mqtt_server, 1883); //CHANGE PORT HERE IF NEEDED
  // client.setCallback(callback);
 
- if (String(NumberLEDUser).toInt() == 1){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS1).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
-  FastLED.setBrightness(brightness);
-
-}
-
-if (String(NumberLEDUser).toInt() == 2){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS2).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
-  FastLED.setBrightness(brightness);
-
-}
-
-if (String(NumberLEDUser).toInt() == 3){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS3).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
-  FastLED.setBrightness(brightness);
-
-}
-if (String(NumberLEDUser).toInt() == 4){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS4).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
-  FastLED.setBrightness(brightness);
-
-}
-if (String(NumberLEDUser).toInt() == 5){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS5).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
-  FastLED.setBrightness(brightness);
-
-}
-
-if (String(NumberLEDUser).toInt() == 6){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS6).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
-  FastLED.setBrightness(brightness);
-
-}
-
-if (String(NumberLEDUser).toInt() == 7){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS7).setCorrection(TypicalLEDStrip);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
-  FastLED.setBrightness(brightness);
-
-}
-
-if (String(NumberLEDUser).toInt() == 8){
+if(String(LED_TYPEUSER) == "WS2811"){
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS8).setCorrection(TypicalLEDStrip);
   FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
   FastLED.setBrightness(brightness);
-
 }
+
+if(String(LED_TYPEUSER) == "WS2812") {
+  FastLED.addLeds<LED_TYPE1, DATA_PIN, COLOR_ORDER1>(leds, NUM_LEDS8).setCorrection(TypicalLEDStrip);
+  FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
+  FastLED.setBrightness(brightness);
+}
+
   setupStripedPalette( CRGB::Red, CRGB::Red, CRGB::White, CRGB::White); //for CANDY CANE
   setupThxPalette( CRGB::OrangeRed, CRGB::Olive, CRGB::Maroon, CRGB::Maroon); //for Thanksgiving
   setupHailPalette( CRGB::Blue, CRGB::Blue, CRGB::Yellow, CRGB::Yellow); //for HAIL

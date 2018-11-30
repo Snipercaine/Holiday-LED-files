@@ -224,6 +224,7 @@ char setanimationspeedTopic[96];
 String mqttClientId; 
 bool Mqttconnected = 0 ;
 char NumberLEDUser[6]= "2";
+char LED_TYPEUSER[10] ="WS2811";
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
 CRGBPalette16 hailPalettestriped; //for Hail
