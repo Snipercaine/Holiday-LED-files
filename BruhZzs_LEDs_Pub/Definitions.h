@@ -297,6 +297,10 @@ bool gReverseDirection = false;
 uint8_t gHue = 0;
 char message_buff[100];
 //#define FASTLED_INTERRUPT_RETRY_COUNT 0
+#ifdef DEBUGTELNET
+WiFiServer telnetServer(23);
+WiFiClient telnetClient;
+#endif
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
