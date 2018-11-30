@@ -8,8 +8,8 @@
 //#define mqtt_password "xxxx" //enter your password
 
 
-char mqtt_server[64] = "192.168.1.10"; // These defaults may be overwritten with values saved by the web interface
-char mqtt_port[6] = "1883";
+char mqtt_server[64] = ""; // These defaults may be overwritten with values saved by the web interface
+char mqtt_port[6] = "";
 char mqtt_user[32] = "DVES_USER";
 char mqtt_password[32] = "DVES_PASS";
 bool Mqttconnected = 0 ;
