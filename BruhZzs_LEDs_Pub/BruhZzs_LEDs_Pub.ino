@@ -1,4 +1,4 @@
-#include "config.h"           // rename sample_config.h and edit any values needed
+#include "sample_config.h"           // rename sample_config.h and edit any values needed
 #include <FS.h>
 //#include <WiFiUdp.h>
 #include <ArduinoOTA.h>

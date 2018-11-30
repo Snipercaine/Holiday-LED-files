@@ -7,9 +7,7 @@
 #define mqtt_user "xxxx"                // Enter your MQTT username
 #define mqtt_port "1883"                // Enter your MQTT Port 1883 is the default non SSL port 8883 for SSL
 #define mqtt_password "xxxx"            // Enter your password
-#define Param1 ""                       // For Future use
-#define Param2 ""                       // For Future use
-#define Param3 ""                       // For Future use
+
 
 #define espName "LEDstrip"              // Change this to whatever you want to call your device
 #define OTApassword ""                  // The password you will need to enter to upload remotely via the ArduinoIDE

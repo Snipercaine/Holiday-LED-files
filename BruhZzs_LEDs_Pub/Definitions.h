@@ -222,7 +222,7 @@ char seteffectPubTopic[96];
 char setbrightnessPubTopic[96];   
 char setanimationspeedTopic[96];   
 String mqttClientId; 
-
+bool Mqttconnected = 0 ;
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
 CRGBPalette16 hailPalettestriped; //for Hail
