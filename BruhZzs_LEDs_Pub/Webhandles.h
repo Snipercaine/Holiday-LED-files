@@ -217,12 +217,12 @@ void webHandleRoot()
   httpMessage += String(F("<form method='POST' action='saveConfig'>"));
   httpMessage += String(F("<b>WiFi SSID </b> <i><small>(required)</small></i><input id='wifiSSID' required name='wifiSSID' maxlength=32 placeholder='WiFi SSID' value='")) + String(WiFi.SSID()) + "'>";
   httpMessage += String(F("<br/><b>WiFi Password</b> <i><small>(required)</small></i><input id='wifiPass' required name='wifiPass' type='password' maxlength=64 placeholder='WiFi Password' value='")) + String("********") + "'>";
-  httpMessage += String(F("<br/><br/><b>LED Node Name</b> <i><small>(required)</small></i><input id='espName' required name='espName' maxlength=15 placeholder='LED Node Name' value='")) + String(espName) + "'>";
-  httpMessage += String(F("<br/><br/><b>MQTT Broker</b> <i><small>(optional)</small></i><input id='mqtt_server'  maxlength=63 placeholder='mqtt_server' value='")) + String(mqtt_server) + "'>";
-  httpMessage += String(F("<br/><b>MQTT Port</b> <i><small>(optional)</small></i><input id='mqtt_port' type='number' maxlength=5 placeholder='mqtt_port' value='")) + String(mqtt_port) + "'>";
-  httpMessage += String(F("<br/><b>MQTT User</b> <i><small>(optional)</small></i><input id='mqtt_user' name='mqtt_user' maxlength=31 placeholder='mqtt_user' value='")) + String(mqtt_user) + "'>";
-  httpMessage += String(F("<br/><b>MQTT Password</b> <i><small>(optional)</small></i><input id='mqtt_password' name='mqtt_password' type='password' maxlength=31 placeholder='mqtt_password'>"));
-  httpMessage += String(F("<br/><b>No of LED's</b> <i><small>(optional)</small></i><input id='LED' name='LED' maxlength=31 placeholder='No of LED's' value='")) + String(NUM_LEDS) + "'>";
+ // httpMessage += String(F("<br/><br/><b>LED Node Name</b> <i><small>(required)</small></i><input id='espName' required name='espName' maxlength=15 placeholder='LED Node Name' value='")) + String(espName) + "'>";
+ // httpMessage += String(F("<br/><br/><b>MQTT Broker</b> <i><small>(optional)</small></i><input id='mqtt_server'  maxlength=63 placeholder='mqtt_server' value='")) + String(mqtt_server) + "'>";
+ // httpMessage += String(F("<br/><b>MQTT Port</b> <i><small>(optional)</small></i><input id='mqtt_port' type='number' maxlength=5 placeholder='mqtt_port' value='")) + String(mqtt_port) + "'>";
+ // httpMessage += String(F("<br/><b>MQTT User</b> <i><small>(optional)</small></i><input id='mqtt_user' name='mqtt_user' maxlength=31 placeholder='mqtt_user' value='")) + String(mqtt_user) + "'>";
+ // httpMessage += String(F("<br/><b>MQTT Password</b> <i><small>(optional)</small></i><input id='mqtt_password' name='mqtt_password' type='password' maxlength=31 placeholder='mqtt_password'>"));
+  //httpMessage += String(F("<br/><b>No of LED's</b> <i><small>(optional)</small></i><input id='LED' name='LED' maxlength=31 placeholder='No of LED's' value='")) + String(NUM_LEDS) + "'>";
  // httpMessage += String(F("<br/><b>LED Type WS2811</b> <i><small>(optional)</small></i><input id='LED_TYPE' name='LED_TYPE' maxlength=31 placeholder='LED Type WS2811'>")) +String(LED_TYPE) + "'>";
   //httpMessage += String(F("<br/><b>COLOR ORDER</b> <i><small>(optional)</small></i><input id='COLOR_ORDER' name='COLOR_ORDER' maxlength=31 placeholder=' RGB for 2811's GRB for 2812's'>"))+String(COLOR_ORDER) + "'>";
 
