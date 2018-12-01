@@ -66,7 +66,56 @@ void setup() {
 
   Serial.println(String(mqtt_server));
     
+  Serial.begin(115200);
 
+  Serial.println();
+
+
+
+  //clean FS, for testing
+
+  //SPIFFS.format();
+
+
+
+  //read configuration from FS json
+
+  Serial.println("mounting FS...");
+
+
+
+  if (SPIFFS.begin()) {
+    Serial.println("mounted file system");
+    if (SPIFFS.exists("/config.json")) {
+      //file exists, reading and loading
+      Serial.println("reading config file");
+      File configFile = SPIFFS.open("/config1.json", "r");
+      if (configFile) {
+        Serial.println("opened config file");
+        size_t size = configFile.size();
+        // Allocate a buffer to store contents of the file.
+        std::unique_ptr<char[]> buf(new char[size]);
+        configFile.readBytes(buf.get(), size);
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject& json = jsonBuffer.parseObject(buf.get());
+        json.printTo(Serial);
+        if (json.success()) {
+          Serial.println("\nparsed json");
+         strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
+         strcpy(NumberLEDUser, json["NumberLEDUser"]);
+         numberLEDs = atol( json["NumberLEDUser1"] );
+  
+  Serial.println(String(numberLEDs));
+  Serial.println(String(mqtt_server));
+        } else {
+          Serial.println("failed to load json config");
+        }
+        configFile.close();
+      }
+    }
+  } else {
+    Serial.println("failed to mount FS");
+  }
 
 
 
@@ -243,10 +292,10 @@ void mqttCallback(String &topic, String &payload)
 
 void loop() {
 
-//  if (!client.connected()) {
-//    reconnect();
-//  }
-//  client.loop();  // commented out block when hand merging
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();  // commented out block when hand merging
   
   httpServer.handleClient();
   
@@ -804,6 +853,7 @@ void addGlitterColor( fract8 chanceOfGlitter, int Rcolor, int Gcolor, int Bcolor
 
 void reconnect() {
   // Loop until we're reconnected
+
 
    if (mqtt_server[0] == 0)
   {
