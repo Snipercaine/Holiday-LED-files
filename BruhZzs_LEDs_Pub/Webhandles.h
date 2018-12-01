@@ -326,6 +326,7 @@ void webHandleRoot()
     httpMessage += String(F("<font color='red'><b>Disconnected</b></font>, return code: ")) + String(client.returnCode());
   }
   httpMessage += String(F("<br/><b>MQTT ClientID: </b>")) + String(mcuHostName);
+  httpMessage += String(F("<br/><b>Version No: </b>")) + String(versionno);
   httpMessage += String(F("<br/><b>CPU Frequency: </b>")) + String(ESP.getCpuFreqMHz()) + String(F("MHz"));
   httpMessage += String(F("<br/><b>Sketch Size: </b>")) + String(ESP.getSketchSize()) + String(F(" bytes"));
   httpMessage += String(F("<br/><b>Free Sketch Space: </b>")) + String(ESP.getFreeSketchSpace()) + String(F(" bytes"));

@@ -292,11 +292,12 @@ void mqttCallback(String &topic, String &payload)
 
 void loop() {
 
+if(mqtt_server[0]!=0){
   if (!client.connected()) {
     reconnect();
   }
   client.loop();  // commented out block when hand merging
-  
+}
   httpServer.handleClient();
   
   while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0"))
