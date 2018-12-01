@@ -157,7 +157,7 @@ if(String(LED_TYPEUSER) == "WS2812") {
 
   gPal = HeatColors_p; //for FIRE
 
-  fill_solid(leds, String(NumberLEDUser).toInt(), CRGB(255, 0, 0)); //Startup LED Lights
+  fill_solid(leds, numberLEDs, CRGB(255, 0, 0)); //Startup LED Lights
   FastLED.show();
 
 
@@ -271,7 +271,7 @@ void loop() {
 
   if (setPower == "OFF") {
     setEffect = "Solid";
-    for ( int i = 0; i < String(NumberLEDUser).toInt(); i++) {
+    for ( int i = 0; i < numberLEDs; i++) {
       leds[i].fadeToBlackBy( 8 );   //FADE OFF LEDS
     }
   }
@@ -284,7 +284,7 @@ void loop() {
     uint8_t BeatsPerMinute = 62;
     CRGBPalette16 palette = bhw2_xmas_gp;
     uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+    for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
@@ -293,7 +293,7 @@ void loop() {
     uint8_t BeatsPerMinute = 62;
     CRGBPalette16 palette = bhw2_greenman_gp;
     uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+    for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
@@ -302,7 +302,7 @@ void loop() {
     uint8_t BeatsPerMinute = 62;
     CRGBPalette16 palette = bhw2_redrosey_gp;
     uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+    for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
@@ -311,7 +311,7 @@ void loop() {
     uint8_t BeatsPerMinute = 62;
     CRGBPalette16 palette = bhw2_thanks_gp;
     uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+    for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
@@ -320,7 +320,7 @@ void loop() {
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; /* higher = faster motion */
 
-    fill_palette( leds, String(NumberLEDUser).toInt(),
+    fill_palette( leds, numberLEDs,
                   startIndex, 16, /* higher = narrower stripes */
                   ThxPalettestriped, 255, LINEARBLEND);
 }
@@ -329,7 +329,7 @@ void loop() {
     uint8_t BeatsPerMinute = 62;
     CRGBPalette16 palette = bhw3_41_gp;
     uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+    for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
@@ -338,7 +338,7 @@ void loop() {
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; /* higher = faster motion */
 
-    fill_palette( leds, String(NumberLEDUser).toInt(),
+    fill_palette( leds, numberLEDs,
                   startIndex, 16, /* higher = narrower stripes */
                   IndPalettestriped, 255, LINEARBLEND);
 }
@@ -348,7 +348,7 @@ void loop() {
     uint8_t BeatsPerMinute = 62;
     CRGBPalette16 palette = Orange_to_Purple_gp;
     uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+    for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
@@ -357,7 +357,7 @@ void loop() {
     uint8_t BeatsPerMinute = 62;
     CRGBPalette16 palette = Pills_3_gp;
     uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+    for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
@@ -366,14 +366,14 @@ void loop() {
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; /* higher = faster motion */
 
-    fill_palette( leds, String(NumberLEDUser).toInt(),
+    fill_palette( leds, numberLEDs,
                   startIndex, 16, /* higher = narrower stripes */
                   hailPalettestriped, 255, LINEARBLEND);
 }
   
   if (setEffect == "Touchdown") {                 //Maize and Blue with POLICE ALL animation
     idex++;
-    if (idex >= String(NumberLEDUser).toInt()) {
+    if (idex >= numberLEDs) {
       idex = 0;
     }
     int idexY = idex;
@@ -387,14 +387,14 @@ void loop() {
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; /* higher = faster motion */
 
-    fill_palette( leds, String(NumberLEDUser).toInt(),
+    fill_palette( leds, numberLEDs,
                   startIndex, 16, /* higher = narrower stripes */
                   HalloweenPalettestriped, 255, LINEARBLEND);
   }
 
     if (setEffect == "Lovey Day") {                 //Valentine's Day colors (TWO COLOR SOLID)
     idex++;
-    if (idex >= String(NumberLEDUser).toInt()) {
+    if (idex >= numberLEDs) {
       idex = 0;
     }
     int idexR = idex;
@@ -408,7 +408,7 @@ void loop() {
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; /* higher = faster motion */
 
-    fill_palette( leds, String(NumberLEDUser).toInt(),
+    fill_palette( leds, numberLEDs,
                   startIndex, 16, /* higher = narrower stripes */
                   HJPalettestriped, 255, LINEARBLEND);
   }
@@ -428,23 +428,23 @@ void loop() {
 /////////////////////////////////////////////
   
   if (setEffect == "Sinelon") {
-    fadeToBlackBy( leds, String(NumberLEDUser).toInt(), 20);
-    int pos = beatsin16(13, 0, String(NumberLEDUser).toInt());
+    fadeToBlackBy( leds, numberLEDs, 20);
+    int pos = beatsin16(13, 0, numberLEDs);
     leds[pos] += CRGB(Rcolor, Gcolor, Bcolor);
   }
 
   if (setEffect == "Juggle" ) {                           // eight colored dots, weaving in and out of sync with each other
-    fadeToBlackBy( leds, String(NumberLEDUser).toInt(), 20);
+    fadeToBlackBy( leds, numberLEDs, 20);
     byte dothue = 0;
     for ( int i = 0; i < 8; i++) {
-      leds[beatsin16(i + 7, 0, String(NumberLEDUser).toInt())] |= CRGB(Rcolor, Gcolor, Bcolor);
+      leds[beatsin16(i + 7, 0, numberLEDs)] |= CRGB(Rcolor, Gcolor, Bcolor);
       dothue += 32;
     }
   }
 
   if (setEffect == "Confetti" ) {                       // random colored speckles that blink in and fade smoothly
-    fadeToBlackBy( leds, String(NumberLEDUser).toInt(), 10);
-    int pos = random16(String(NumberLEDUser).toInt());
+    fadeToBlackBy( leds, numberLEDs, 10);
+    int pos = random16(numberLEDs);
     leds[pos] += CRGB(Rcolor + random8(64), Gcolor, Bcolor);
   }
 
@@ -452,20 +452,20 @@ void loop() {
   if (setEffect == "Rainbow") {
     // FastLED's built-in rainbow generator
     static uint8_t starthue = 0;    thishue++;
-    fill_rainbow(leds, String(NumberLEDUser).toInt(), thishue, deltahue);
+    fill_rainbow(leds, numberLEDs, thishue, deltahue);
   }
 
 
   if (setEffect == "Rainbow with Glitter") {               // FastLED's built-in rainbow generator with Glitter
     static uint8_t starthue = 0;
     thishue++;
-    fill_rainbow(leds, String(NumberLEDUser).toInt(), thishue, deltahue);
+    fill_rainbow(leds, numberLEDs, thishue, deltahue);
     addGlitter(80);
   }
 
 
   if (setEffect == "Glitter") {
-    fadeToBlackBy( leds, String(NumberLEDUser).toInt(), 20);
+    fadeToBlackBy( leds, numberLEDs, 20);
     addGlitterColor(80, Rcolor, Gcolor, Bcolor);
   }
 
@@ -474,13 +474,13 @@ void loop() {
   uint8_t BeatsPerMinute = 62;
   CRGBPalette16 palette = PartyColors_p;
   uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-  for( int i = 0; i < String(NumberLEDUser).toInt(); i++) { //9948
+  for( int i = 0; i < numberLEDs; i++) { //9948
     leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
   }
 }
 
   if (setEffect == "Solid" & setPower == "ON" ) {          //Fill entire strand with solid color
-    fill_solid(leds, String(NumberLEDUser).toInt(), CRGB(Rcolor, Gcolor, Bcolor));
+    fill_solid(leds, numberLEDs, CRGB(Rcolor, Gcolor, Bcolor));
   }
 
   
@@ -492,7 +492,7 @@ void loop() {
       FastLED.show();
     }
     const CRGB lightcolor(8, 7, 1);
-    for ( int i = 0; i < String(NumberLEDUser).toInt(); i++) {
+    for ( int i = 0; i < numberLEDs; i++) {
       if ( !leds[i]) continue; // skip black pixels
       if ( leds[i].r & 1) { // is red odd?
         leds[i] -= lightcolor; // darken if red is odd
@@ -501,19 +501,19 @@ void loop() {
       }
     }
     if ( random8() < DENSITY) {
-      int j = random16(String(NumberLEDUser).toInt());
+      int j = random16(numberLEDs);
       if ( !leds[j] ) leds[j] = lightcolor;
     }
   }
 
   if (setEffect == "Dots") {
-    uint8_t inner = beatsin8(bpm, String(NumberLEDUser).toInt() / 4, String(NumberLEDUser).toInt() / 4 * 3);
-    uint8_t outer = beatsin8(bpm, 0, String(NumberLEDUser).toInt() - 1);
-    uint8_t middle = beatsin8(bpm, String(NumberLEDUser).toInt() / 3, String(NumberLEDUser).toInt() / 3 * 2);
+    uint8_t inner = beatsin8(bpm, numberLEDs / 4, numberLEDs / 4 * 3);
+    uint8_t outer = beatsin8(bpm, 0, numberLEDs - 1);
+    uint8_t middle = beatsin8(bpm, numberLEDs / 3, numberLEDs / 3 * 2);
     leds[middle] = CRGB::Purple;
     leds[inner] = CRGB::Blue;
     leds[outer] = CRGB::Aqua;
-    nscale8(leds, String(NumberLEDUser).toInt(), fadeval);
+    nscale8(leds, numberLEDs, fadeval);
   }
 
   if (setEffect == "Lightning") {
@@ -523,8 +523,8 @@ void loop() {
       FastLED.clear();
       FastLED.show();
     }
-    ledstart = random8(String(NumberLEDUser).toInt());           // Determine starting location of flash
-    ledlen = random8(String(NumberLEDUser).toInt() - ledstart);  // Determine length of flash (not to go beyond NumberLEDUser-1)
+    ledstart = random8(numberLEDs);           // Determine starting location of flash
+    ledlen = random8(numberLEDs - ledstart);  // Determine length of flash (not to go beyond NumberLEDUser-1)
     for (int flashCounter = 0; flashCounter < random8(3, flashes); flashCounter++) {
       if (flashCounter == 0) dimmer = 5;    // the brightness of the leader is scaled down by a factor of 5
       else dimmer = random8(1, 3);          // return strokes are brighter than the leader
@@ -543,13 +543,13 @@ void loop() {
 
   if (setEffect == "Police One") {                    //POLICE LIGHTS (TWO COLOR SINGLE LED)
     idex++;
-    if (idex >= String(NumberLEDUser).toInt()) {
+    if (idex >= numberLEDs) {
       idex = 0;
     }
     int idexR = idex;
     int idexB = antipodal_index(idexR);
     int thathue = (thishuepolice + 160) % 255;
-    for (int i = 0; i < String(NumberLEDUser).toInt(); i++ ) {
+    for (int i = 0; i < numberLEDs; i++ ) {
       if (i == idexR) {
         leds[i] = CHSV(thishuepolice, thissat, 255);
       }
@@ -565,7 +565,7 @@ void loop() {
 
   if (setEffect == "Police All") {                 //POLICE LIGHTS (TWO COLOR SOLID)
     idex++;
-    if (idex >= String(NumberLEDUser).toInt()) {
+    if (idex >= numberLEDs) {
       idex = 0;
     }
     int idexR = idex;
@@ -580,7 +580,7 @@ void loop() {
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; /* higher = faster motion */
 
-    fill_palette( leds, String(NumberLEDUser).toInt(),
+    fill_palette( leds, numberLEDs,
                   startIndex, 16, /* higher = narrower stripes */
                   currentPalettestriped, 255, LINEARBLEND);
   }
@@ -590,7 +590,7 @@ void loop() {
   static uint8_t hue = 0;
   Serial.print("x");
   // First slide the led in one direction
-  for(int i = 0; i < String(NumberLEDUser).toInt(); i++) {
+  for(int i = 0; i < numberLEDs; i++) {
     // Set the i'th led to red 
     leds[i] = CHSV(hue++, 255, 255);
     // Show the leds
@@ -601,7 +601,7 @@ void loop() {
     // Wait a little bit before we loop around and do it again
     delay(10);
   }
-  for(int i = (String(NumberLEDUser).toInt())-1; i >= 0; i--) {
+  for(int i = (numberLEDs)-1; i >= 0; i--) {
     // Set the i'th led to red 
     leds[i] = CHSV(hue++, 255, 255);
     // Show the leds
@@ -629,7 +629,7 @@ void loop() {
 
     if (setEffect == "Easter") {
       setPower = "ON";
-      for (int i = 0; i < String(NumberLEDUser).toInt(); i++) {                                     // Just ONE loop to fill up the LED array as all of the pixels change.
+      for (int i = 0; i < numberLEDs; i++) {                                     // Just ONE loop to fill up the LED array as all of the pixels change.
         uint8_t index = inoise8(i * scale, dist + i * scale) % 255;            // Get a value from the noise function. I'm using both x and y axis.
         leds[i] = ColorFromPalette(currentPalette, index, 255, LINEARBLEND);   // With that value, look up the 8 bit colour palette value and assign it to the current LED.
       }
@@ -639,10 +639,10 @@ void loop() {
 
 
     if (setEffect == "Ripple") {
-      for (int i = 0; i < String(NumberLEDUser).toInt(); i++) leds[i] = CHSV(bgcol++, 255, 15);  // Rotate background colour.
+      for (int i = 0; i < numberLEDs; i++) leds[i] = CHSV(bgcol++, 255, 15);  // Rotate background colour.
       switch (step) {
         case -1:                                                          // Initialize ripple variables.
-          center = random(String(NumberLEDUser).toInt());
+          center = random(numberLEDs);
           colour = random8();
           step = 0;
           break;
@@ -654,8 +654,8 @@ void loop() {
           step = -1;
           break;
         default:                                                             // Middle of the ripples.
-          leds[(center + step + String(NumberLEDUser).toInt()) % String(NumberLEDUser).toInt()] += CHSV(colour, 255, myfade / step * 2);   // Simple wrap from Marc Miller
-          leds[(center - step + String(NumberLEDUser).toInt()) % String(NumberLEDUser).toInt()] += CHSV(colour, 255, myfade / step * 2);
+          leds[(center + step + numberLEDs) % numberLEDs] += CHSV(colour, 255, myfade / step * 2);   // Simple wrap from Marc Miller
+          leds[(center - step + numberLEDs) % numberLEDs] += CHSV(colour, 255, myfade / step * 2);
           step ++;                                                         // Next step.
           break;
       }
@@ -746,7 +746,7 @@ void setupHalloweenPalette( CRGB A, CRGB AB, CRGB B, CRGB BA)
 
 ////////////////////////////////////////////////////////
 
-void fadeall() { for(int i = 0; i < String(NumberLEDUser).toInt(); i++) { leds[i].nscale8(250); } } //for CYCLON
+void fadeall() { for(int i = 0; i < numberLEDs; i++) { leds[i].nscale8(250); } } //for CYCLON
 
 
 void Fire2012WithPalette()
@@ -755,12 +755,12 @@ void Fire2012WithPalette()
   static byte heat[NUM_LEDS8];
 
   // Step 1.  Cool down every cell a little
-    for( int i = 0; i < String(NumberLEDUser).toInt(); i++) {
-      heat[i] = qsub8( heat[i],  random8(0, ((COOLING * 10) / String(NumberLEDUser).toInt()) + 2));
+    for( int i = 0; i < numberLEDs; i++) {
+      heat[i] = qsub8( heat[i],  random8(0, ((COOLING * 10) / numberLEDs) + 2));
     }
   
     // Step 2.  Heat from each cell drifts 'up' and diffuses a little
-    for( int k= String(NumberLEDUser).toInt() - 1; k >= 2; k--) {
+    for( int k= numberLEDs - 1; k >= 2; k--) {
       heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2] ) / 3;
     }
     
@@ -771,14 +771,14 @@ void Fire2012WithPalette()
     }
 
     // Step 4.  Map from heat cells to LED colors
-    for( int j = 0; j < String(NumberLEDUser).toInt(); j++) {
+    for( int j = 0; j < numberLEDs; j++) {
       // Scale the heat value from 0-255 down to 0-240
       // for best results with color palettes.
       byte colorindex = scale8( heat[j], 240);
       CRGB color = ColorFromPalette( gPal, colorindex);
       int pixelnumber;
       if( gReverseDirection ) {
-        pixelnumber = (String(NumberLEDUser).toInt()-1) - j;
+        pixelnumber = (numberLEDs-1) - j;
       } else {
         pixelnumber = j;
       }
@@ -790,14 +790,14 @@ void Fire2012WithPalette()
 void addGlitter( fract8 chanceOfGlitter) 
 {
   if( random8() < chanceOfGlitter) {
-    leds[ random16(String(NumberLEDUser).toInt()) ] += CRGB::White;
+    leds[ random16(numberLEDs) ] += CRGB::White;
   }
 }
 
 void addGlitterColor( fract8 chanceOfGlitter, int Rcolor, int Gcolor, int Bcolor) 
 {
   if( random8() < chanceOfGlitter) {
-    leds[ random16(String(NumberLEDUser).toInt()) ] += CRGB(Rcolor, Gcolor, Bcolor);
+    leds[ random16(numberLEDs) ] += CRGB(Rcolor, Gcolor, Bcolor);
   }
 }
 

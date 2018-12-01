@@ -190,7 +190,9 @@ void setup_wifi() {
     strcpy(espName, custom_espName.getValue());
     strcpy(LED_TYPEUSER, custom_LEDtpe.getValue());
     strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
-  
+     numberLEDs = atol( custom_mqttNumleds.getValue() );
+
+  Serial.println(String(numberLEDs));
   Serial.println(String(mqtt_server));
     
 
@@ -212,6 +214,18 @@ void setup_wifi() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void webHandleRoot()
 { 
+
+  if (webServer.arg("Seteffect") != ""){
+  client.publish(setpowerPubTopic, "ON");
+ setPower = "ON";
+  setEffect = webServer.arg("Seteffect");
+
+  }else
+  {
+      client.publish(setpowerPubTopic, "OFF");
+      setPower = "OFF";
+  
+  }
   // If we haven't collected the Nextion model, try now
   String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", String(espName));
@@ -363,9 +377,8 @@ if (webServer.arg("Seteffect") != ""){
  setPower = "ON";
   setEffect = webServer.arg("Seteffect");
 
-  }
-
-  if (webServer.arg("Seteffect") == "Off"){
+  }else
+  {
       client.publish(setpowerPubTopic, "OFF");
       setPower = "OFF";
   
