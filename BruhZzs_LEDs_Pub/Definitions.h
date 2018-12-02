@@ -225,8 +225,8 @@ String mqttClientId;
 bool Mqttconnected = 0 ;
 char NumberLEDUser[6]= "2";
 long numberLEDs = 0;
-
 char LED_TYPEUSER[10] ="WS2811";
+
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
 CRGBPalette16 hailPalettestriped; //for Hail
@@ -304,8 +304,6 @@ char message_buff[100];
 
 WiFiServer telnetServer(23);
 WiFiClient telnetClient;
-
-ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
 
