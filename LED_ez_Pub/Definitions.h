@@ -314,6 +314,7 @@ const char LED_STYLE[] = "<style>button{background-color:#03A9F4;}body{width:60%
 
 WiFiClient wifiClient;
 ESP8266WebServer webServer(80);
+ESP8266HTTPUpdateServer httpOTAUpdate;
 
 char wifiSSID[32] = ""; // Leave unset for wireless autoconfig.
 char wifiPass[64] = ""; // Note that these values will be lost if auto-update is used,

@@ -7,9 +7,10 @@ void saveConfigCallback()
   shouldSaveConfig = true;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void saveUpdatedConfig()
-{ // Save the custom parameters to config.json
+{ // Save the custom parameters to LED.json
   DynamicJsonBuffer jsonBuffer(256);
   JsonObject &json = jsonBuffer.createObject();
   json["mqtt_server"] = mqtt_server;
@@ -20,7 +21,7 @@ void saveUpdatedConfig()
   json["LED_TYPEUSER"] = LED_TYPEUSER;
 
   
-  File configFile = SPIFFS.open("/config.json", "w");
+  File configFile = SPIFFS.open("/LED.json", "w");
   if (!configFile)
   {
     Serial.println(F("SPIFFS: Failed to open config file for writing"));
@@ -67,27 +68,31 @@ void clearSavedConfig()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void startEspOTA(String espOtaUrl)
 { // Update ESP firmware from HTTP
-
+  
   WiFiUDP::stopAll(); // Keep mDNS responder from breaking things
 
   t_httpUpdate_return returnCode = ESPhttpUpdate.update(espOtaUrl);
+   Serial.println(espOtaUrl);
   switch (returnCode)
   {
   case HTTP_UPDATE_FAILED:
-
+    Serial.println("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
-
+    Serial.println(F("ESPFW: HTTP_UPDATE_NO_UPDATES"));
     break;
 
   case HTTP_UPDATE_OK:
-
+    Serial.println(F("ESPFW: HTTP_UPDATE_OK"));
     espReset();
   }
   delay(5000);
-
+  
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 void webHandleReboot()
 { 
@@ -109,9 +114,9 @@ void webHandleReboot()
 void setup_wifi() {
 
   delay(10);
-//  Serial.println();
-//  Serial.print("Connecting to ");
-//  Serial.println(wifi_ssid);
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(wifi_ssid);
 
 //  WiFi.mode(WIFI_STA);
 //  WiFi.hostname(mcuHostName);
@@ -207,7 +212,7 @@ void setup_wifi() {
     JsonObject& json = jsonBuffer.createObject();
     json["LED_TYPEUSER"] = String(LED_TYPEUSER);
     json["NumberLEDUser"] = NumberLEDUser;
-    File configFile = SPIFFS.open("/config.json", "w");
+    File configFile = SPIFFS.open("/LED.json", "w");
     if (!configFile) {
       Serial.println("failed to open config file for writing");
     }
@@ -362,10 +367,10 @@ void webHandleSaveConfig()
 
       if (SPIFFS.begin()) {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
+    if (SPIFFS.exists("/LED.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
+      File configFile = SPIFFS.open("/LED.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();
@@ -513,7 +518,8 @@ void webHandleResetConfig()
 }
 
 void webHandleFirmware()
-{// firmware
+{
+
  
   String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", (String(espName) + " update"));
@@ -523,20 +529,43 @@ void webHandleFirmware()
   httpMessage += FPSTR(HTTP_HEAD_END);
   httpMessage += String(F("<h1>")) + String(espName) + String(F(" firmware</h1>"));
 
-
   httpMessage += String(F("<form method='get' action='/espfirmware'>"));
- 
- 
+
+ // httpMessage += String(F("<br/><b>Update ESP8266 from URL</b><small><i> http only</i></small>"));
+ // httpMessage += String(F("<br/><input id='espFirmwareURL' name='espFirmware' value='")) + espFirmwareUrl + "'>";
+ // httpMessage += String(F("<br/><br/><button type='submit'>Update ESP from URL</button></form>"));
+
+  httpMessage += String(F("<br/><form method='POST' action='/update' enctype='multipart/form-data'>"));
   httpMessage += String(F("<b>Update ESP8266 from file</b><input type='file' id='espSelect' name='espSelect' accept='.bin'>"));
   httpMessage += String(F("<br/><br/><button type='submit' id='espUploadSubmit' onclick='ackEspUploadSubmit()'>Update ESP from file</button></form>"));
 
- 
+  //ttpMessage += String(F("<br/><br/><hr><h1>WARNING!</h1>"));
+  //httpMessage += String(F("<b>Nextion LCD firmware updates can be risky.</b> If interrupted, the HASP will need to be manually power cycled which might mean a trip to the breaker box. "));
+  //httpMessage += String(F("After a power cycle, the LCD will display an error message until a successful firmware update has completed.<br/>"));
+
+ // httpMessage += String(F("<br/><hr><form method='get' action='lcddownload'>"));
+ // if (updateLcdAvailable)
+ // {
+//    httpMessage += String(F("<font color='green'><b>HASP LCD update available!</b></font>"));
+//  }
+//  httpMessage += String(F("<br/><b>Update Nextion LCD from URL</b><small><i> http only</i></small>"));
+//  httpMessage += String(F("<br/><input id='lcdFirmware' name='lcdFirmware' value='")) + lcdFirmwareUrl + "'>";
+//  httpMessage += String(F("<br/><br/><button type='submit'>Update LCD from URL</button></form>"));
+
+  //httpMessage += String(F("<br/><form method='POST' action='/lcdupload' enctype='multipart/form-data'>"));
+ // httpMessage += String(F("<br/><b>Update Nextion LCD from file</b><input type='file' id='lcdSelect' name='files[]' accept='.tft'/>"));
+ // httpMessage += String(F("<br/><br/><button type='submit' id='lcdUploadSubmit' onclick='ackLcdUploadSubmit()'>Update LCD from file</button></form>"));
+
   // Javascript to collect the filesize of the LCD upload and send it to /tftFileSize
   httpMessage += String(F("<script>function handleLcdFileSelect(evt) {"));
   httpMessage += String(F("var uploadFile = evt.target.files[0];"));
-
+  httpMessage += String(F("document.getElementById('lcdUploadSubmit').innerHTML = 'Upload LCD firmware ' + uploadFile.name;"));
+  httpMessage += String(F("var tftFileSize = '/tftFileSize?tftFileSize=' + uploadFile.size;"));
+  httpMessage += String(F("var xhttp = new XMLHttpRequest();xhttp.open('GET', tftFileSize, true);xhttp.send();}"));
+  httpMessage += String(F("function ackLcdUploadSubmit() {document.getElementById('lcdUploadSubmit').innerHTML = 'Uploading LCD firmware...';}"));
   httpMessage += String(F("function handleEspFileSelect(evt) {var uploadFile = evt.target.files[0];document.getElementById('espUploadSubmit').innerHTML = 'Upload ESP firmware ' + uploadFile.name;}"));
   httpMessage += String(F("function ackEspUploadSubmit() {document.getElementById('espUploadSubmit').innerHTML = 'Uploading ESP firmware...';}"));
+  httpMessage += String(F("document.getElementById('lcdSelect').addEventListener('change', handleLcdFileSelect, false);"));
   httpMessage += String(F("document.getElementById('espSelect').addEventListener('change', handleEspFileSelect, false);</script>"));
 
   httpMessage += FPSTR(HTTP_END);
@@ -545,7 +574,6 @@ void webHandleFirmware()
 
 void webHandleEspFirmware()
 { //espfirmware
-
 
   String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", (String(espName) + " ESP update"));
@@ -557,12 +585,15 @@ void webHandleEspFirmware()
   httpMessage += String(F("<h1>"));
   httpMessage += String(espName) + " ESP update";
   httpMessage += String(F("</h1>"));
-  httpMessage += "<br/>Updating ESP firmware from: " + String(webServer.arg("espFirmware"));
+  httpMessage += "<br/>Updating ESP firmware from: " + String(webServer.arg("espSelect"));
   httpMessage += FPSTR(HTTP_END);
   webServer.send(200, "text/html", httpMessage);
+String serv = "http://" + WiFi.localIP().toString() +"/" + webServer.arg("espSelect") ;
 
+  Serial.println("ESPFW: Attempting ESP firmware update from: " + String(serv));
+  startEspOTA(webServer.arg(serv));
  
-  startEspOTA(webServer.arg("espFirmware"));
+
 }
 
 void handleTelnetClient()

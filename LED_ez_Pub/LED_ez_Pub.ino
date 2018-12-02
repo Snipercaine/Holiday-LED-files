@@ -46,10 +46,12 @@ void setup() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Webserver handles
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  httpOTAUpdate.setup(&webServer, "/update");
   webServer.on("/", webHandleRoot);
   webServer.on("/saveConfig", webHandleSaveConfig);
   webServer.on("/resetConfig", webHandleResetConfig);
   webServer.on("/LEDroutine", webHandleLEDroutine);
+   webServer.on("/espfirmware", webHandleEspFirmware);
   webServer.on("/espfirmware", webHandleEspFirmware);
   webServer.on("/firmware", webHandleFirmware);
   webServer.on("/reboot", webHandleReboot);
@@ -70,10 +72,10 @@ void setup() {
   Serial.println("mounting FS...");
   if (SPIFFS.begin()) {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
+    if (SPIFFS.exists("/LED.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
+      File configFile = SPIFFS.open("/LED.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();
