@@ -1,4 +1,38 @@
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void saveConfigCallback()
+{ // Callback notifying us of the need to save config
+  Serial.println(F("SPIFFS: Configuration changed, flagging for save"));
+  shouldSaveConfig = true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void saveUpdatedConfig()
+{ // Save the custom parameters to config.json
+  DynamicJsonBuffer jsonBuffer(256);
+  JsonObject &json = jsonBuffer.createObject();
+  json["mqtt_server"] = mqtt_server;
+  json["mqtt_port"] = mqtt_port;
+  json["mqtt_user"] = mqtt_user;
+  json["mqtt_password"] = mqtt_password;
+  json["NumberLEDUser"] = NumberLEDUser;
+  json["LED_TYPEUSER"] = LED_TYPEUSER;
+
+  
+  File configFile = SPIFFS.open("/config.json", "w");
+  if (!configFile)
+  {
+    Serial.println(F("SPIFFS: Failed to open config file for writing"));
+  }
+  else
+  {
+    json.printTo(configFile);
+    configFile.close();
+  }
+  shouldSaveConfig = false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void espReset()
 {
@@ -10,9 +44,26 @@ void espReset()
   delay(2000);
   Serial1.print("rest");
   Serial1.flush();
+  saveConfigCallback();
+  saveUpdatedConfig();
   ESP.reset();
   delay(5000);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void clearSavedConfig()
+{ // Clear out all local storage
+  //SPIFFS.format();
+  WiFiManager wifiManager;
+  wifiManager.resetSettings();
+  EEPROM.begin(512);
+  for (uint16_t i = 0; i < EEPROM.length(); i++)
+  {
+    EEPROM.write(i, 0);
+  }
+  espReset();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void startEspOTA(String espOtaUrl)
 { // Update ESP firmware from HTTP
@@ -51,53 +102,6 @@ void webHandleReboot()
   httpMessage += String(F("<br/>Rebooting device"));
   httpMessage += FPSTR(HTTP_END);
 
-  espReset();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void saveConfigCallback()
-{ // Callback notifying us of the need to save config
-  Serial.println(F("SPIFFS: Configuration changed, flagging for save"));
-  shouldSaveConfig = true;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void saveUpdatedConfig()
-{ // Save the custom parameters to config.json
-  DynamicJsonBuffer jsonBuffer(256);
-  JsonObject &json = jsonBuffer.createObject();
-  json["mqtt_server"] = mqtt_server;
-  json["mqtt_port"] = mqtt_port;
-  json["mqtt_user"] = mqtt_user;
-  json["mqtt_password"] = mqtt_password;
-  json["NumberLEDUser"] = NumberLEDUser;
-  json["LED_TYPEUSER"] = LED_TYPEUSER;
-
-  
-  File configFile = SPIFFS.open("/config.json", "w");
-  if (!configFile)
-  {
-    Serial.println(F("SPIFFS: Failed to open config file for writing"));
-  }
-  else
-  {
-    json.printTo(configFile);
-    configFile.close();
-  }
-  shouldSaveConfig = false;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void clearSavedConfig()
-{ // Clear out all local storage
-  SPIFFS.format();
-  WiFiManager wifiManager;
-  wifiManager.resetSettings();
-  EEPROM.begin(512);
-  for (uint16_t i = 0; i < EEPROM.length(); i++)
-  {
-    EEPROM.write(i, 0);
-  }
   espReset();
 }
 
