@@ -73,7 +73,7 @@ void setup() {
     if (SPIFFS.exists("/config.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config1.json", "r");
+      File configFile = SPIFFS.open("/config.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();
@@ -87,7 +87,7 @@ void setup() {
           Serial.println("\nparsed json");
          strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
          strcpy(NumberLEDUser, json["NumberLEDUser"]);
-         numberLEDs = atol( json["NumberLEDUser1"] );
+         numberLEDs = atol( json["NumberLEDUser"] );
   
         Serial.println(String(numberLEDs));
         Serial.println(String(mqtt_server));
