@@ -10,7 +10,7 @@ void saveConfigCallback()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void saveUpdatedConfig()
-{ // Save the custom parameters to LED.json
+{ // Save the custom parameters to config.json
   DynamicJsonBuffer jsonBuffer(256);
   JsonObject &json = jsonBuffer.createObject();
   json["mqtt_server"] = mqtt_server;
@@ -35,21 +35,8 @@ void saveUpdatedConfig()
 
   json["NumberLEDUser"] = NumberLEDUser;
   json["LED_TYPEUSER"] = LED_TYPEUSER;
-
-  
-  File configFile1 = SPIFFS.open("/LED.json", "w");
-  if (!configFile1)
-  {
-    Serial.println(F("SPIFFS: Failed to open config file for writing LED"));
-  }
-  else
-  {
-    json.printTo(configFile1);
-    configFile.close();
-  }
-  
-  shouldSaveConfig = false;
 }
+  
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void espReset()
@@ -231,7 +218,7 @@ void setup_wifi() {
     JsonObject& json = jsonBuffer.createObject();
     json["LED_TYPEUSER"] = String(LED_TYPEUSER);
     json["NumberLEDUser"] = NumberLEDUser;
-    File configFile = SPIFFS.open("/LED.json", "w");
+    File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
       Serial.println("failed to open config file for writing");
     }
@@ -386,10 +373,10 @@ void webHandleSaveConfig()
 
       if (SPIFFS.begin()) {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/LED.json")) {
+    if (SPIFFS.exists("/config.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/LED.json", "r");
+      File configFile = SPIFFS.open("/config.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();

@@ -57,7 +57,7 @@ void setup() {
   webServer.on("/reboot", webHandleReboot);
   //webServer.onNotFound(webHandleNotFound);
   webServer.begin();
-  
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,14 +69,14 @@ void setup() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //read configuration from FS json
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-SPIFFS.format();
+
   Serial.println("mounting FS...");
   if (SPIFFS.begin()) {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/LED.json")) {
+    if (SPIFFS.exists("/config.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/LED.json", "r");
+      File configFile = SPIFFS.open("/config.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();
