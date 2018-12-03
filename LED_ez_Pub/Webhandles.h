@@ -58,7 +58,7 @@ void espReset()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void clearSavedConfig()
 { // Clear out all local storage
-  //SPIFFS.format();
+  SPIFFS.format();
   WiFiManager wifiManager;
   wifiManager.resetSettings();
   EEPROM.begin(512);
@@ -213,20 +213,8 @@ void setup_wifi() {
   Serial.println(String(numberLEDs));
   Serial.println(String(mqtt_server));
     
+saveUpdatedConfig();
 
- DynamicJsonBuffer jsonBuffer;
-    JsonObject& json = jsonBuffer.createObject();
-    json["LED_TYPEUSER"] = String(LED_TYPEUSER);
-    json["NumberLEDUser"] = NumberLEDUser;
-    File configFile = SPIFFS.open("/config.json", "w");
-    if (!configFile) {
-      Serial.println("failed to open config file for writing");
-    }
-    json.printTo(Serial);
-    json.printTo(configFile);
-    configFile.close();
-    //end save
-  }
  // if (strlen(mqtt_server) !=  "xxx.xxx.xxx.xxx"){
  // client.begin(mqtt_server, atoi(mqtt_port), wifiClient);
  // client.onMessage(mqttCallback);
@@ -234,7 +222,7 @@ void setup_wifi() {
 
  // }
 
-}
+}}
 
 
 
@@ -388,9 +376,17 @@ void webHandleSaveConfig()
         json.printTo(Serial);
         if (json.success()) {
           Serial.println("\nparsed json");
-         strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
-         strcpy(NumberLEDUser, json["NumberLEDUser"]);
-         numberLEDs = atol( json["NumberLEDUser"] );
+    strcpy(mqtt_server,json["mqtt_server"]);
+    strcpy(mqtt_port,json["mqtt_port"]);
+    strcpy(mqtt_user,json["mqtt_user"]);
+    strcpy(mqtt_password, json["mqtt_password"]);
+    strcpy(espName, json["espName"]);
+    strcpy(LED_TYPEUSER,json["LED_TYPEUSER"]);
+    strcpy(NumberLEDUser, json["NumberLEDUser"]);
+    
+     numberLEDs = atol( NumberLEDUser );
+         
+    
   
   Serial.println(String(numberLEDs));
   Serial.println(String(mqtt_server));

@@ -88,8 +88,17 @@ void setup() {
         json.printTo(Serial);
         if (json.success()) {
           Serial.println("\nparsed json");
-         strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
-         strcpy(NumberLEDUser, json["NumberLEDUser"]);
+
+    strcpy(mqtt_server,json["mqtt_server"]);
+    strcpy(mqtt_port,json["mqtt_port"]);
+    strcpy(mqtt_user,json["mqtt_user"]);
+    strcpy(mqtt_password, json["mqtt_password"]);
+    strcpy(espName, json["espName"]);
+    strcpy(LED_TYPEUSER,json["LED_TYPEUSER"]);
+    strcpy(NumberLEDUser, json["NumberLEDUser"]);
+
+    
+     numberLEDs = atol( json["NumberLEDUser"] );
          numberLEDs = atol( json["NumberLEDUser"] );
   
         Serial.println(String(numberLEDs));
