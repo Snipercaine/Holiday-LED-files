@@ -96,7 +96,8 @@ void setup() {
     strcpy(espName, json["espName"]);
     strcpy(LED_TYPEUSER,json["LED_TYPEUSER"]);
     strcpy(NumberLEDUser, json["NumberLEDUser"]);
-
+    strcpy(wifiSSID,json["wifiSSID"]);
+    strcpy(wifiPass, json["wifiPass"]);
     
      numberLEDs = atol( json["NumberLEDUser"] );
          numberLEDs = atol( json["NumberLEDUser"] );

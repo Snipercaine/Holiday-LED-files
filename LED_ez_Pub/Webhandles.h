@@ -19,6 +19,8 @@ void saveUpdatedConfig()
   json["mqtt_password"] = mqtt_password;
   json["NumberLEDUser"] = NumberLEDUser;
   json["LED_TYPEUSER"] = LED_TYPEUSER;
+  json["wifiSSID"] = WiFi.SSID();
+  json["wifiPass"] = WiFi.psk();
 
   
   File configFile = SPIFFS.open("/config.json", "w");
@@ -208,6 +210,8 @@ void setup_wifi() {
     strcpy(espName, custom_espName.getValue());
     strcpy(LED_TYPEUSER, custom_LEDtpe.getValue());
     strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
+   // strcpy(wifiSSID,WiFi.SSID());
+   // strcpy(wifiPass, WiFi.psk());
      numberLEDs = atol( custom_mqttNumleds.getValue() );
 
   Serial.println(String(numberLEDs));
@@ -383,7 +387,10 @@ void webHandleSaveConfig()
     strcpy(espName, json["espName"]);
     strcpy(LED_TYPEUSER,json["LED_TYPEUSER"]);
     strcpy(NumberLEDUser, json["NumberLEDUser"]);
-    
+    strcpy(wifiSSID,json["wifiSSID"]);
+    strcpy(wifiPass, json["wifiPass"]);
+
+
      numberLEDs = atol( NumberLEDUser );
          
     
