@@ -10,7 +10,7 @@ void saveConfigCallback()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void saveUpdatedConfig()
-{ // Save the custom parameters to config.json
+{ // Save the custom parameters to led.json
   DynamicJsonBuffer jsonBuffer(256);
   JsonObject &json = jsonBuffer.createObject();
   json["mqtt_server"] = mqtt_server;
@@ -23,7 +23,7 @@ void saveUpdatedConfig()
   json["wifiPass"] = WiFi.psk();
 
   
-  File configFile = SPIFFS.open("/config.json", "w");
+  File configFile = SPIFFS.open("/led.json", "w");
   if (!configFile)
   {
     Serial.println(F("SPIFFS: Failed to open config file for writing"));
@@ -365,10 +365,10 @@ void webHandleSaveConfig()
 
       if (SPIFFS.begin()) {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
+    if (SPIFFS.exists("/led.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
+      File configFile = SPIFFS.open("/led.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();

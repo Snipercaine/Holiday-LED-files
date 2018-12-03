@@ -9,8 +9,8 @@
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-#include <SoftwareSerial.h>
-#include <TimeLib.h>                            // Time library
+//#include <SoftwareSerial.h>
+//#include <TimeLib.h>                            // Time library
 #include <ESP8266WiFi.h>
 #include <MQTT.h>
 #include <FastLED.h>
@@ -73,10 +73,10 @@ void setup() {
   Serial.println("mounting FS...");
   if (SPIFFS.begin()) {
     Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
+    if (SPIFFS.exists("/led.json")) {
       //file exists, reading and loading
       Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
+      File configFile = SPIFFS.open("/led.json", "r");
       if (configFile) {
         Serial.println("opened config file");
         size_t size = configFile.size();
