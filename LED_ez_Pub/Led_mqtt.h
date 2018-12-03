@@ -5,7 +5,7 @@ void mqttCallback(String &topic, String &payload)
 
   if (String(topic) == setpowerSubTopic) {
     setPower = String(message_buff);
-    Serial.println("Set Power: " + setPower);
+    debuglineprint("Set Power: " + setPower);
     if (setPower == "OFF") {
       client.publish(setpowerPubTopic, "OFF");
     }
@@ -22,7 +22,7 @@ void mqttCallback(String &topic, String &payload)
   //  }
   //  message_buff[i] = '\0';
     setEffect = String(payload);
-    Serial.println("Set Effect: " + setEffect);
+    debuglineprint("Set Effect: " + setEffect);
     setPower = "ON";
     client.publish(setpowerPubTopic, "ON");
     if (setEffect == "Twinkle") {
@@ -40,7 +40,7 @@ void mqttCallback(String &topic, String &payload)
    // }
   //  message_buff[i] = '\0';
     setBrightness = String(payload);
-    Serial.println("Set Brightness: " + setBrightness);
+    debuglineprint("Set Brightness: " + setBrightness);
     brightness = setBrightness.toInt();
     setPower = "ON";
     client.publish(setpowerPubTopic, "ON");
@@ -53,7 +53,7 @@ void mqttCallback(String &topic, String &payload)
  //   message_buff[i] = '\0';
     client.publish(setcolorPubTopic, message_buff);
     setColor = String(payload);
-    Serial.println("Set Color: " + setColor);
+    debuglineprint("Set Color: " + setColor);
     setPower = "ON";
     client.publish(setpowerPubTopic, "ON");
     }
@@ -81,9 +81,9 @@ void mqttConnect()
       ArduinoOTA.handle();
     }
   }
-  Serial.println( "MQTTServer");
+  debuglineprint( "MQTTServer");
   
-  Serial.println( String(mqtt_server));
+  debuglineprint( String(mqtt_server));
     // Loop until we're reconnected to MQTT
     if (mqtt_server[0] != 0){
   while (!client.connected())
@@ -93,13 +93,13 @@ void mqttConnect()
     mqttClientId = String(espName);
     // Set keepAlive, cleanSession, timeout
   if(String(mqtt_server)!=""){
-  Serial.println("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
+  debuglineprint("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     if (client.connect(espName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
       // Subscribe to our incoming topics
       Mqttconnected = 1 ;
       client.publish(lwtTopic,"Online", true);
-      Serial.println("MQTT: Connected");
+      debuglineprint("MQTT: Connected");
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();
@@ -111,7 +111,7 @@ void mqttConnect()
       client.subscribe(seteffectSubTopic);
       client.subscribe(setanimationspeedTopic);
       client.publish(setpowerPubTopic, "OFF");
-      mqttReconnectCount = 0;
+      mqttReconnectCount = mqttReconnectCount + 1;
       unsigned long mqttReconnectTimeout = 10000;  // timeout for MQTT reconnect
       unsigned long mqttReconnectTimer = millis(); // record current time for our timeout
       while ((millis() - mqttReconnectTimer) < mqttReconnectTimeout)
@@ -120,6 +120,9 @@ void mqttConnect()
         webServer.handleClient();
         ArduinoOTA.handle();
       }
+      if(mqttReconnectCount >5 ){
+    WiFi.disconnect();  
+        }
     }}}
   }else{
       FastLED.clear (); //Turns off startup LEDs after connection is made

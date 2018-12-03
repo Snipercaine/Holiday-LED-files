@@ -9,13 +9,13 @@
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-//#include <SoftwareSerial.h>
-//#include <TimeLib.h>                            // Time library
+#include <SoftwareSerial.h>
+#include <TimeLib.h>                            // Time library
 #include <ESP8266WiFi.h>
 #include <MQTT.h>
 #include <FastLED.h>
 #include <ESP8266mDNS.h>
-#include "sample_config.h"           // rename sample_config.h and edit any values needed
+
 #include "Definitions.h"  // also includes const and variables
 ////////////////////////////////////////////////////////////
 
@@ -32,6 +32,12 @@ MQTTClient client(256);
 void setup() {
   
   Serial.begin(115200);
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+//read configuration from FS json
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  
   // build hostname with last 6 of MACID
   os_strcpy(mcuHostName, getDeviceID());
 
@@ -39,7 +45,7 @@ void setup() {
    SetTopics();
 
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
-
+  readSavedConfig();
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
   setup_wifi();
 
@@ -61,59 +67,11 @@ void setup() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  Serial.println(String(mqtt_server));
+  debuglineprint(String(mqtt_server));
   Serial.begin(115200);
-  Serial.println(String(numberLEDs));
+  debuglineprint(String(numberLEDs));
   //clean FS, for testing
   //SPIFFS.format();
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//read configuration from FS json
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  Serial.println("mounting FS...");
-  if (SPIFFS.begin()) {
-    Serial.println("mounted file system");
-    if (SPIFFS.exists("/led.json")) {
-      //file exists, reading and loading
-      Serial.println("reading config file");
-      File configFile = SPIFFS.open("/led.json", "r");
-      if (configFile) {
-        Serial.println("opened config file");
-        size_t size = configFile.size();
-        // Allocate a buffer to store contents of the file.
-        std::unique_ptr<char[]> buf(new char[size]);
-        configFile.readBytes(buf.get(), size);
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& json = jsonBuffer.parseObject(buf.get());
-        json.printTo(Serial);
-        if (json.success()) {
-          Serial.println("\nparsed json");
-
-    strcpy(mqtt_server,json["mqtt_server"]);
-    strcpy(mqtt_port,json["mqtt_port"]);
-    strcpy(mqtt_user,json["mqtt_user"]);
-    strcpy(mqtt_password, json["mqtt_password"]);
-    strcpy(espName, json["espName"]);
-    strcpy(LED_TYPEUSER,json["LED_TYPEUSER"]);
-    strcpy(NumberLEDUser, json["NumberLEDUser"]);
-    strcpy(wifiSSID,json["wifiSSID"]);
-    strcpy(wifiPass, json["wifiPass"]);
-    
-     numberLEDs = atol( json["NumberLEDUser"] );
-         numberLEDs = atol( json["NumberLEDUser"] );
-  
-        Serial.println(String(numberLEDs));
-        Serial.println(String(mqtt_server));
-        } else {
-          Serial.println("failed to load json config");
-        }
-        configFile.close();
-      }
-    }
-  } else {
-    Serial.println("failed to mount FS");
-  }
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OTA
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,10 +90,10 @@ void setup() {
     } else { // U_SPIFFS
       type = "filesystem";
     }
-     Serial.println("Start updating " + type);
+     debuglineprint("Start updating " + type);
   });
   ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
+    debuglineprint("\nEnd");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
@@ -143,30 +101,30 @@ void setup() {
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR) {
-      Serial.println("Auth Failed");
+      debuglineprint("Auth Failed");
     } else if (error == OTA_BEGIN_ERROR) {
-      Serial.println("Begin Failed");
+      debuglineprint("Begin Failed");
     } else if (error == OTA_CONNECT_ERROR) {
-      Serial.println("Connect Failed");
+      debuglineprint("Connect Failed");
     } else if (error == OTA_RECEIVE_ERROR) {
-      Serial.println("Receive Failed");
+      debuglineprint("Receive Failed");
     } else if (error == OTA_END_ERROR) {
-      Serial.println("End Failed");
+      debuglineprint("End Failed");
     }
   });
   ArduinoOTA.begin();
-  Serial.println("Ready");
+  debuglineprint("Ready");
   Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  debuglineprint(WiFi.localIP());
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Setup telnet server for remote debug output
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   telnetServer.setNoDelay(true);
   telnetServer.begin();
-   Serial.println(String(F("TELNET: debug server enabled at telnet:")) + WiFi.localIP().toString());
-   Serial.println( "MQTTServer");
-   Serial.println( String(mqtt_server));
+   debuglineprint(String(F("TELNET: debug server enabled at telnet:")) + WiFi.localIP().toString());
+   debuglineprint( "MQTTServer");
+   debuglineprint( String(mqtt_server));
 
  ///////////////////////////////////////////////////////////////////////////////////////
  // MQTT   
@@ -236,7 +194,7 @@ void reconnect() {
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.connected());
-      Serial.println(" try again in 5 seconds");
+      debuglineprint(" try again in 5 seconds");
       // Wait 5 seconds before retrying
       delay(5000);
     }

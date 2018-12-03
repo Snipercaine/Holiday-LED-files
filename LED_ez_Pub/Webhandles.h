@@ -1,17 +1,98 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void readSavedConfig()
+{ // Read saved config.json from SPIFFS
+
+// json["mqtt_server"] = mqtt_server;
+//  json["mqtt_port"] = mqtt_port;
+//  json["mqtt_user"] = mqtt_user;
+//  json["mqtt_password"] = mqtt_password;
+//  json["NumberLEDUser"] = NumberLEDUser;
+//  json["LED_TYPEUSER"] = LED_TYPEUSER;
+
+  // Read configuration from FS json
+  debuglineprint(F("SPIFFS: mounting FS..."));
+
+  if (SPIFFS.begin())
+  {
+    debuglineprint(F("SPIFFS: mounted file system"));
+    if (SPIFFS.exists("/config.json"))
+    {
+      // File exists, reading and loading
+      debuglineprint(F("SPIFFS: reading config file"));
+      File configFile = SPIFFS.open("/config.json", "r");
+      if (configFile)
+      {
+        debuglineprint(F("SPIFFS: opened config file"));
+        size_t size = configFile.size();
+        // Allocate a buffer to store contents of the file.
+        std::unique_ptr<char[]> buf(new char[size]);
+
+        configFile.readBytes(buf.get(), size);
+        DynamicJsonBuffer configJsonBuffer(256);
+        JsonObject &configJson = configJsonBuffer.parseObject(buf.get());
+        if (configJson.success())
+        {
+          if (configJson["mqtt_server"].success())
+          {
+            strcpy(mqtt_server, configJson["mqtt_server"]);
+          }
+          if (configJson["mqtt_port"].success())
+          {
+            strcpy(mqtt_port, configJson["mqtt_port"]);
+          }
+          if (configJson["mqtt_user"].success())
+          {
+            strcpy(mqtt_user, configJson["mqtt_user"]);
+          }
+          if (configJson["mqtt_password"].success())
+          {
+            strcpy(mqtt_password, configJson["mqtt_password"]);
+          }
+          if (configJson["NumberLEDUser"].success())
+          {
+            strcpy(NumberLEDUser, configJson["NumberLEDUser"]);
+          }
+          if (configJson["LED_TYPEUSER"].success())
+          {
+            strcpy(LED_TYPEUSER, configJson["LED_TYPEUSER"]);
+          }
+//          if (configJson["Future"].success())
+//          {
+//            strcpy(configPassword, configJson["Future"]);
+//          }
+          String configJsonStr;
+          configJson.printTo(configJsonStr);
+          debuglineprint(String(F("SPIFFS: parsed json:")) + configJsonStr);
+        }
+        else
+        {
+          debuglineprint(F("SPIFFS: [ERROR] Failed to load json config"));
+        }
+      }
+    }
+  }
+  else
+  {
+    debuglineprint(F("SPIFFS: [ERROR] Failed to mount FS"));
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void saveConfigCallback()
 { // Callback notifying us of the need to save config
-  Serial.println(F("SPIFFS: Configuration changed, flagging for save"));
+  debuglineprint(F("SPIFFS: Configuration changed, flagging for save"));
   shouldSaveConfig = true;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void saveUpdatedConfig()
-{ // Save the custom parameters to led.json
-  DynamicJsonBuffer jsonBuffer(256);
+{ // Save the custom parameters to config.json
+  SPIFFS.begin();
+  DynamicJsonBuffer jsonBuffer(512);
   JsonObject &json = jsonBuffer.createObject();
   json["mqtt_server"] = mqtt_server;
   json["mqtt_port"] = mqtt_port;
@@ -19,27 +100,23 @@ void saveUpdatedConfig()
   json["mqtt_password"] = mqtt_password;
   json["NumberLEDUser"] = NumberLEDUser;
   json["LED_TYPEUSER"] = LED_TYPEUSER;
-  json["wifiSSID"] = WiFi.SSID();
-  json["wifiPass"] = WiFi.psk();
 
   
-  File configFile = SPIFFS.open("/led.json", "w");
+  File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile)
   {
-    Serial.println(F("SPIFFS: Failed to open config file for writing"));
+    debuglineprint(F("SPIFFS: Failed to open config file for writing"));
   }
   else
   {
     json.printTo(configFile);
+    Serial1.print(configFile);
     configFile.close();
   }
 
-
-  json["NumberLEDUser"] = NumberLEDUser;
-  json["LED_TYPEUSER"] = LED_TYPEUSER;
+SPIFFS.end();
+    
 }
-  
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void espReset()
 {
@@ -49,25 +126,28 @@ void espReset()
     client.disconnect();
   }
   delay(2000);
-  Serial1.print("rest");
-  Serial1.flush();
-  saveConfigCallback();
-  saveUpdatedConfig();
-  ESP.reset();
+ // Serial1.print("rest");
+ // Serial1.flush();
+ //  saveConfigCallback();
+ // saveUpdatedConfig();
+  SPIFFS.end();
   delay(5000);
+ESP.restart() ;
+  
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void clearSavedConfig()
 { // Clear out all local storage
+  
   SPIFFS.format();
   WiFiManager wifiManager;
   wifiManager.resetSettings();
-  EEPROM.begin(512);
-  for (uint16_t i = 0; i < EEPROM.length(); i++)
-  {
-    EEPROM.write(i, 0);
-  }
+  //EEPROM.begin(512);
+ // for (uint16_t i = 0; i < EEPROM.length(); i++)
+ // {
+ //   EEPROM.write(i, 0);
+ // }
   espReset();
 }
 
@@ -78,21 +158,21 @@ void startEspOTA(String espOtaUrl)
   WiFiUDP::stopAll(); // Keep mDNS responder from breaking things
 
   t_httpUpdate_return returnCode = ESPhttpUpdate.update("https://github.com/GeradB/Holiday-LED-files/blob/development/BruhZzs_LEDs_Pub/LED_ez_Pub.ino.d1_mini.bin");
-   Serial.println(espOtaUrl);
+   debuglineprint(espOtaUrl);
   switch (returnCode)
   {
   case HTTP_UPDATE_FAILED:
-    Serial.println("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
+    debuglineprint("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
     Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
               
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
-    Serial.println(F("ESPFW: HTTP_UPDATE_NO_UPDATES"));
+    debuglineprint(F("ESPFW: HTTP_UPDATE_NO_UPDATES"));
     break;
 
   case HTTP_UPDATE_OK:
-    Serial.println(F("ESPFW: HTTP_UPDATE_OK"));
+    debuglineprint(F("ESPFW: HTTP_UPDATE_OK"));
     espReset();
   }
   delay(5000);
@@ -122,9 +202,9 @@ void webHandleReboot()
 void setup_wifi() {
 
   delay(10);
-  Serial.println();
+  debuglineprint();
   Serial.print("Connecting to ");
-  Serial.println(wifi_ssid);
+  debuglineprint(wifi_ssid);
 
 //  WiFi.mode(WIFI_STA);
 //  WiFi.hostname(mcuHostName);
@@ -135,10 +215,10 @@ void setup_wifi() {
 //    Serial.print(".");
 //  }
 //
-//  Serial.println("");
-//  Serial.println("WiFi connected");
-//  Serial.println("IP address: ");
-// Serial.println(WiFi.localIP());
+//  debuglineprint("");
+//  debuglineprint("WiFi connected");
+//  debuglineprint("IP address: ");
+// debuglineprint(WiFi.localIP());
   
   
   // Assign our hostname (default esp_name + left 6 MAC) before connecting to WiFi
@@ -198,7 +278,7 @@ void setup_wifi() {
     // and goes into a blocking loop awaiting configuration.
     if (!wifiManager.autoConnect(wifiConfigAP, wifiConfigPass))
     { // Reset and try again
-      Serial.println(F("WIFI: Failed to connect and hit timeout"));
+      debuglineprint(F("WIFI: Failed to connect and hit timeout"));
       espReset();
       
 }
@@ -210,15 +290,17 @@ void setup_wifi() {
     strcpy(espName, custom_espName.getValue());
     strcpy(LED_TYPEUSER, custom_LEDtpe.getValue());
     strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
-   // strcpy(wifiSSID,WiFi.SSID());
-   // strcpy(wifiPass, WiFi.psk());
      numberLEDs = atol( custom_mqttNumleds.getValue() );
 
-  Serial.println(String(numberLEDs));
-  Serial.println(String(mqtt_server));
-    
-saveUpdatedConfig();
+  debuglineprint(String(numberLEDs));
+  debuglineprint(String(mqtt_server));
 
+     if (shouldSaveConfig)
+    { // Save the custom parameters to FS
+      saveUpdatedConfig();
+    }
+  //  saveConfigCallback();
+  //saveUpdatedConfig();
  // if (strlen(mqtt_server) !=  "xxx.xxx.xxx.xxx"){
  // client.begin(mqtt_server, atoi(mqtt_port), wifiClient);
  // client.onMessage(mqttCallback);
@@ -364,13 +446,13 @@ void webHandleSaveConfig()
     {
 
       if (SPIFFS.begin()) {
-    Serial.println("mounted file system");
-    if (SPIFFS.exists("/led.json")) {
+    debuglineprint("mounted file system");
+    if (SPIFFS.exists("/config.json")) {
       //file exists, reading and loading
-      Serial.println("reading config file");
-      File configFile = SPIFFS.open("/led.json", "r");
+      debuglineprint("reading config file");
+      File configFile = SPIFFS.open("/config.json", "r");
       if (configFile) {
-        Serial.println("opened config file");
+        debuglineprint("opened config file");
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
@@ -379,32 +461,21 @@ void webHandleSaveConfig()
         JsonObject& json = jsonBuffer.parseObject(buf.get());
         json.printTo(Serial);
         if (json.success()) {
-          Serial.println("\nparsed json");
-    strcpy(mqtt_server,json["mqtt_server"]);
-    strcpy(mqtt_port,json["mqtt_port"]);
-    strcpy(mqtt_user,json["mqtt_user"]);
-    strcpy(mqtt_password, json["mqtt_password"]);
-    strcpy(espName, json["espName"]);
-    strcpy(LED_TYPEUSER,json["LED_TYPEUSER"]);
-    strcpy(NumberLEDUser, json["NumberLEDUser"]);
-    strcpy(wifiSSID,json["wifiSSID"]);
-    strcpy(wifiPass, json["wifiPass"]);
-
-
-     numberLEDs = atol( NumberLEDUser );
-         
-    
+          debuglineprint("\nparsed json");
+         strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
+         strcpy(NumberLEDUser, json["NumberLEDUser"]);
+         numberLEDs = atol( json["NumberLEDUser"] );
   
-  Serial.println(String(numberLEDs));
-  Serial.println(String(mqtt_server));
+  debuglineprint(String(numberLEDs));
+  debuglineprint(String(mqtt_server));
         } else {
-          Serial.println("failed to load json config");
+          debuglineprint("failed to load json config");
         }
         configFile.close();
       }
     }
   } else {
-    Serial.println("failed to mount FS");
+    debuglineprint("failed to mount FS");
   }
  
  
@@ -526,10 +597,10 @@ void webHandleResetConfig()
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void webHandleFirmware()
-{
+{ 
 
- 
   String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", (String(espName) + " update"));
   httpMessage += FPSTR(HTTP_SCRIPT);
@@ -540,30 +611,13 @@ void webHandleFirmware()
 
   httpMessage += String(F("<form method='get' action='/espfirmware'>"));
 
- // httpMessage += String(F("<br/><b>Update ESP8266 from URL</b><small><i> http only</i></small>"));
- // httpMessage += String(F("<br/><input id='espFirmwareURL' name='espFirmware' value='")) + espFirmwareUrl + "'>";
- // httpMessage += String(F("<br/><br/><button type='submit'>Update ESP from URL</button></form>"));
-
+ 
   httpMessage += String(F("<br/><form method='POST' action='/update' enctype='multipart/form-data'>"));
-  httpMessage += String(F("<b>Update ESP8266 from file</b><input type='file' id='espSelect' name='espSelect' accept='.bin'>"));
+  httpMessage += String(F("<b>Update LED-ez from file</b><input type='file' id='espSelect' name='espSelect' accept='.bin'>"));
   httpMessage += String(F("<br/><br/><button type='submit' id='espUploadSubmit' onclick='ackEspUploadSubmit()'>Update ESP from file</button></form>"));
 
-  //ttpMessage += String(F("<br/><br/><hr><h1>WARNING!</h1>"));
-  //httpMessage += String(F("<b>Nextion LCD firmware updates can be risky.</b> If interrupted, the HASP will need to be manually power cycled which might mean a trip to the breaker box. "));
-  //httpMessage += String(F("After a power cycle, the LCD will display an error message until a successful firmware update has completed.<br/>"));
+  httpMessage += String(F("<br/><hr>"));
 
- // httpMessage += String(F("<br/><hr><form method='get' action='lcddownload'>"));
- // if (updateLcdAvailable)
- // {
-//    httpMessage += String(F("<font color='green'><b>HASP LCD update available!</b></font>"));
-//  }
-//  httpMessage += String(F("<br/><b>Update Nextion LCD from URL</b><small><i> http only</i></small>"));
-//  httpMessage += String(F("<br/><input id='lcdFirmware' name='lcdFirmware' value='")) + lcdFirmwareUrl + "'>";
-//  httpMessage += String(F("<br/><br/><button type='submit'>Update LCD from URL</button></form>"));
-
-  //httpMessage += String(F("<br/><form method='POST' action='/lcdupload' enctype='multipart/form-data'>"));
- // httpMessage += String(F("<br/><b>Update Nextion LCD from file</b><input type='file' id='lcdSelect' name='files[]' accept='.tft'/>"));
- // httpMessage += String(F("<br/><br/><button type='submit' id='lcdUploadSubmit' onclick='ackLcdUploadSubmit()'>Update LCD from file</button></form>"));
 
   // Javascript to collect the filesize of the LCD upload and send it to /tftFileSize
   httpMessage += String(F("<script>function handleLcdFileSelect(evt) {"));
@@ -581,9 +635,9 @@ void webHandleFirmware()
   webServer.send(200, "text/html", httpMessage);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void webHandleEspFirmware()
-{ //espfirmware
-
+{ 
   String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage.replace("{v}", (String(espName) + " ESP update"));
   httpMessage += FPSTR(HTTP_SCRIPT);
@@ -594,16 +648,15 @@ void webHandleEspFirmware()
   httpMessage += String(F("<h1>"));
   httpMessage += String(espName) + " ESP update";
   httpMessage += String(F("</h1>"));
-  httpMessage += "<br/>Updating ESP firmware from: " + String(webServer.arg("espSelect"));
+  httpMessage += "<br/>Updating ESP firmware from: " + String(webServer.arg("espFirmware"));
   httpMessage += FPSTR(HTTP_END);
   webServer.send(200, "text/html", httpMessage);
-String serv = "http://" + WiFi.localIP().toString() +"/" + webServer.arg("espSelect") ;
 
-  Serial.println("ESPFW: Attempting ESP firmware update from: " + String(serv));
-  startEspOTA("/LED_ez_Pub.ino.d1_mini.bin");
- 
-
+   debuglineprint("ESPFW: Attempting ESP firmware update from: " + String(webServer.arg("espFirmware")));
+  startEspOTA(webServer.arg("espFirmware"));
 }
+
+
 
 void handleTelnetClient()
 { // Basic telnet client handling code from: https://gist.github.com/tablatronix/4793677ca748f5f584c95ec4a2b10303
