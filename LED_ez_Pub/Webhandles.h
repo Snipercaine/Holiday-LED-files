@@ -21,7 +21,7 @@ void saveUpdatedConfig()
   json["LED_TYPEUSER"] = LED_TYPEUSER;
 
   
-  File configFile = SPIFFS.open("/LED.json", "w");
+  File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile)
   {
     Serial.println(F("SPIFFS: Failed to open config file for writing"));
@@ -31,6 +31,23 @@ void saveUpdatedConfig()
     json.printTo(configFile);
     configFile.close();
   }
+
+
+  json["NumberLEDUser"] = NumberLEDUser;
+  json["LED_TYPEUSER"] = LED_TYPEUSER;
+
+  
+  File configFile1 = SPIFFS.open("/LED.json", "w");
+  if (!configFile1)
+  {
+    Serial.println(F("SPIFFS: Failed to open config file for writing LED"));
+  }
+  else
+  {
+    json.printTo(configFile1);
+    configFile.close();
+  }
+  
   shouldSaveConfig = false;
 }
 
@@ -71,12 +88,14 @@ void startEspOTA(String espOtaUrl)
   
   WiFiUDP::stopAll(); // Keep mDNS responder from breaking things
 
-  t_httpUpdate_return returnCode = ESPhttpUpdate.update(espOtaUrl);
+  t_httpUpdate_return returnCode = ESPhttpUpdate.update("https://github.com/GeradB/Holiday-LED-files/blob/development/BruhZzs_LEDs_Pub/LED_ez_Pub.ino.d1_mini.bin");
    Serial.println(espOtaUrl);
   switch (returnCode)
   {
   case HTTP_UPDATE_FAILED:
     Serial.println("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
+    Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+              
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
@@ -591,7 +610,7 @@ void webHandleEspFirmware()
 String serv = "http://" + WiFi.localIP().toString() +"/" + webServer.arg("espSelect") ;
 
   Serial.println("ESPFW: Attempting ESP firmware update from: " + String(serv));
-  startEspOTA(webServer.arg(serv));
+  startEspOTA("/LED_ez_Pub.ino.d1_mini.bin");
  
 
 }

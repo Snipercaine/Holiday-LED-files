@@ -57,6 +57,7 @@ void setup() {
   webServer.on("/reboot", webHandleReboot);
   //webServer.onNotFound(webHandleNotFound);
   webServer.begin();
+  
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +69,7 @@ void setup() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //read configuration from FS json
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+SPIFFS.format();
   Serial.println("mounting FS...");
   if (SPIFFS.begin()) {
     Serial.println("mounted file system");
@@ -110,7 +111,7 @@ void setup() {
   MDNS.begin(mcuHostName);
   httpUpdater.setup(&webServer);
   webServer.begin();
-  MDNS.addService("http", "tcp", 80);
+  MDNS.addService("http", "tcp", 81);
    ArduinoOTA.setPort(OTAport);
    ArduinoOTA.setHostname(mcuHostName);
    ArduinoOTA.setPassword((const char *)OTApassword);
