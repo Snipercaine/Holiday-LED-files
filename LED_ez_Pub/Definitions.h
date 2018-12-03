@@ -366,15 +366,40 @@ const char *getDeviceID() {
 
   return identifier;
 }
+void handleTelnetClient()
+{ // Basic telnet client handling code from: https://gist.github.com/tablatronix/4793677ca748f5f584c95ec4a2b10303
+  if (telnetServer.hasClient())
+  {
+    // client is connected
+    if (!telnetClient || !telnetClient.connected())
+    {
+      if (telnetClient)
+        telnetClient.stop();                   // client disconnected
+      telnetClient = telnetServer.available(); // ready for new client
+    }
+    else
+    {
+      telnetServer.available().stop(); // have client, block new conections
+    }
+  }
+  // Handle client input from telnet connection.
+  if (telnetClient && telnetClient.connected() && telnetClient.available())
+  {
+    // client input processing
+    while (telnetClient.available())
+    {
+      // Read data from telnet just to clear out the buffer
+      telnetClient.read();
+    }
+  }
+}
+
 
 void debuglineprint(String debugText)
 { // Debug output line of text to our debug targets
   String debugTimeText = "[+" + String(float(millis()) / 1000, 3) + "s] " + debugText;
-  SoftwareSerial debugSerial = SoftwareSerial(17, 1); // 17==nc for RX, 1==TX pin
-  debugSerial.begin(115200);
-  debugdebuglineprint(debugTimeText);
-  debugSerial.flush();
-  debuglineprint(debugTimeText);
+  Serial.print(debugTimeText);
+  Serial.print(debugTimeText);
   Serial.flush();
   if (telnetClient.connected())
   {
