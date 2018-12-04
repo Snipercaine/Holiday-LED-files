@@ -183,23 +183,22 @@ void loop() {
 
 void reconnect() {
   // Loop until we're reconnected
-
-  
-    while (mqtt_server[0] == 0)
-    { // Handle HTTP and OTA while we're waiting for MQTT to be configured
-      yield();
-      webServer.handleClient();
-      ArduinoOTA.handle();
-    }
-  
+  // Handle HTTP and OTA while we're waiting for MQTT to be configured
+  while (mqtt_server[0] == 0) { 
+    yield();
+    webServer.handleClient();
+    ArduinoOTA.handle();
+  }
+  client.setWill(lwtTopic, "Offline", true, 2);
+  // Attempt to connect
   while (!client.connected()) {
-    // Attempt to connect
-    if (client.connect(mcuHostName, mqtt_user, mqtt_password)){//, lwtTopic, 1, 1, "Offline")) {
+    if (client.connect(mcuHostName, mqtt_user, mqtt_password)) { 
+      client.publish(lwtTopic, "Online", true, 2);  
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.connected());
       debugLn(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
+      // Wait 5 seconds before retrying - need to get rid of this and move to ticker instead of blocking 5 sec delay
       delay(5000);
     }
   }
