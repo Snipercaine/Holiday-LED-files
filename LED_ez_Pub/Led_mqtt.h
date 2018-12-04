@@ -93,6 +93,11 @@ void mqttConnect()
     mqttClientId = String(espName);
     // Set keepAlive, cleanSession, timeout
   if(String(mqtt_server)!=""){
+
+      yield();
+      webServer.handleClient();
+      ArduinoOTA.handle();
+
   debuglineprint("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     if (client.connect(espName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
@@ -125,6 +130,10 @@ void mqttConnect()
         }
     }}}
   }else{
+     yield();
+      webServer.handleClient();
+      ArduinoOTA.handle();
+
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();
 

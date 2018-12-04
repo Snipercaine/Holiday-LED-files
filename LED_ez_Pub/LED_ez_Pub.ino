@@ -60,6 +60,7 @@ void setup() {
    webServer.on("/espfirmware", webHandleEspFirmware);
   webServer.on("/espfirmware", webHandleEspFirmware);
   webServer.on("/firmware", webHandleFirmware);
+  webServer.on("/MQtt", webHandleMQtt);
   webServer.on("/reboot", webHandleReboot);
   //webServer.onNotFound(webHandleNotFound);
   webServer.begin();
