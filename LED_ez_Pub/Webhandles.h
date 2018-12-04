@@ -12,19 +12,19 @@ void readSavedConfig()
 //  json["LED_TYPEUSER"] = LED_TYPEUSER;
 
   // Read configuration from FS json
-  debugLn(F("SPIFFS: mounting FS..."));
+  debuglineprint(F("SPIFFS: mounting FS..."));
 
   if (SPIFFS.begin())
   {
-    debugLn(F("SPIFFS: mounted file system"));
+    debuglineprint(F("SPIFFS: mounted file system"));
     if (SPIFFS.exists("/config.json"))
     {
       // File exists, reading and loading
-      debugLn(F("SPIFFS: reading config file"));
+      debuglineprint(F("SPIFFS: reading config file"));
       File configFile = SPIFFS.open("/config.json", "r");
       if (configFile)
       {
-        debugLn(F("SPIFFS: opened config file"));
+        debuglineprint(F("SPIFFS: opened config file"));
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
@@ -64,18 +64,18 @@ void readSavedConfig()
 //          }
           String configJsonStr;
           configJson.printTo(configJsonStr);
-          debugLn(String(F("SPIFFS: parsed json:")) + configJsonStr);
+          debuglineprint(String(F("SPIFFS: parsed json:")) + configJsonStr);
         }
         else
         {
-          debugLn(F("SPIFFS: [ERROR] Failed to load json config"));
+          debuglineprint(F("SPIFFS: [ERROR] Failed to load json config"));
         }
       }
     }
   }
   else
   {
-    debugLn(F("SPIFFS: [ERROR] Failed to mount FS"));
+    debuglineprint(F("SPIFFS: [ERROR] Failed to mount FS"));
   }
 }
 
@@ -83,7 +83,7 @@ void readSavedConfig()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void saveConfigCallback()
 { // Callback notifying us of the need to save config
-  debugLn(F("SPIFFS: Configuration changed, flagging for save"));
+  debuglineprint(F("SPIFFS: Configuration changed, flagging for save"));
   shouldSaveConfig = true;
 }
 
@@ -105,7 +105,7 @@ void saveUpdatedConfig()
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile)
   {
-    debugLn(F("SPIFFS: Failed to open config file for writing"));
+    debuglineprint(F("SPIFFS: Failed to open config file for writing"));
   }
   else
   {
@@ -158,21 +158,21 @@ void startEspOTA(String espOtaUrl)
   WiFiUDP::stopAll(); // Keep mDNS responder from breaking things
 
   t_httpUpdate_return returnCode = ESPhttpUpdate.update("https://github.com/GeradB/Holiday-LED-files/blob/development/BruhZzs_LEDs_Pub/LED_ez_Pub.ino.d1_mini.bin");
-   debugLn(espOtaUrl);
+   debuglineprint(espOtaUrl);
   switch (returnCode)
   {
   case HTTP_UPDATE_FAILED:
-    debugLn("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
+    debuglineprint("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
     Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
               
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
-    debugLn(F("ESPFW: HTTP_UPDATE_NO_UPDATES"));
+    debuglineprint(F("ESPFW: HTTP_UPDATE_NO_UPDATES"));
     break;
 
   case HTTP_UPDATE_OK:
-    debugLn(F("ESPFW: HTTP_UPDATE_OK"));
+    debuglineprint(F("ESPFW: HTTP_UPDATE_OK"));
     espReset();
   }
   delay(5000);
@@ -203,8 +203,8 @@ void setup_wifi() {
 
   delay(10);
   //();
- debugLn("Connecting to ");
-  debugLn(wifi_ssid);
+ debuglineprint("Connecting to ");
+  debuglineprint(wifi_ssid);
 
 //  WiFi.mode(WIFI_STA);
 //  WiFi.hostname(mcuHostName);
@@ -215,10 +215,10 @@ void setup_wifi() {
 //    Serial.print(".");
 //  }
 //
-//  debugLn("");
-//  debugLn("WiFi connected");
-//  debugLn("IP address: ");
-// debugLn(WiFi.localIP());
+//  debuglineprint("");
+//  debuglineprint("WiFi connected");
+//  debuglineprint("IP address: ");
+// debuglineprint(WiFi.localIP());
   
   
   // Assign our hostname (default esp_name + left 6 MAC) before connecting to WiFi
@@ -278,7 +278,7 @@ void setup_wifi() {
     // and goes into a blocking loop awaiting configuration.
     if (!wifiManager.autoConnect(wifiConfigAP, wifiConfigPass))
     { // Reset and try again
-      debugLn(F("WIFI: Failed to connect and hit timeout"));
+      debuglineprint(F("WIFI: Failed to connect and hit timeout"));
       espReset();
       
 }
@@ -292,8 +292,8 @@ void setup_wifi() {
     strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
      numberLEDs = atol( custom_mqttNumleds.getValue() );
 
-  debugLn(String(numberLEDs));
-  debugLn(String(mqtt_server));
+  debuglineprint(String(numberLEDs));
+  debuglineprint(String(mqtt_server));
 
      if (shouldSaveConfig)
     { // Save the custom parameters to FS
@@ -345,8 +345,11 @@ void webHandleRoot()
   httpMessage += String(F("<img src='data:image/jpeg;base64,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' />"));
   httpMessage += String(F("<br/><b>No of LED's </b><label id='LED' name='LED' ><b>'")) + String(NumberLEDUser) + "'</label></b></label></>";
   httpMessage += String(F("<br/><b>LED Type  </b><label id='LED_TYPE' name='LED_TYPE' ><b>'")) +String(LED_TYPEUSER) + "'</b></label></>";
+  httpMessage += String(F("<hr><form method='get' action='colour'>"));
+  httpMessage += String(F("<button type='submit'>colour</button></form>"));
+
   httpMessage += String(F("<hr><form method='get' action='LEDroutine'>"));
-  httpMessage += String(F("<button type='submit'>Run LED effects</button></form>"));
+  httpMessage += String(F("<button type='submit'>effects</button></form>"));
   httpMessage += String(F("<hr><form method='get' action='reboot'>"));
   httpMessage += String(F("<button type='submit'>reboot device</button></form>"));
   httpMessage += String(F("<hr><form method='get' action='resetConfig'>"));
@@ -380,6 +383,69 @@ void webHandleRoot()
   httpMessage += FPSTR(HTTP_END);
   webServer.send(200, "text/html", httpMessage);
 }
+
+
+void colorConverter(String hexValue)
+{
+int Rcolor1;
+int Gcolor1;
+int Bcolor1;
+int temp;
+char C_color;
+
+
+
+char charbuf[8];
+hexValue.toCharArray(charbuf,8);
+
+  Rcolor = 255- (hex2dec(charbuf[1]) + hex2dec(charbuf[0]) * 16);
+  Gcolor = 255- (hex2dec(charbuf[3]) + hex2dec(charbuf[2]) * 16);
+  Bcolor = 255- (hex2dec(charbuf[5]) + hex2dec(charbuf[4]) * 16);
+      
+Rcolor = Rcolor1;
+Gcolor = Gcolor1;
+Bcolor =Bcolor1;
+
+
+ client.publish(setpowerPubTopic, "ON");
+      setPower = "ON";
+      setEffect = "Solid";
+      
+}
+void Webhandlecolour()
+{ 
+ 
+  String httpMessage = FPSTR(HTTP_HEAD);
+    
+
+    if (webServer.arg("brightness") != ""){
+      brightness = webServer.arg("brightness").toInt();
+    }
+      if (webServer.arg("color") != ""){
+      colorConverter("#"+webServer.arg("color"));
+       
+      }
+  
+  httpMessage.replace("{v}", String(espName));
+  httpMessage += FPSTR(HTTP_SCRIPT);
+  httpMessage += "<script src='//cdnjs.cloudflare.com/ajax/libs/jscolor/2.0.4/jscolor.js'></script>";
+  httpMessage += FPSTR(HTTP_STYLE);
+  httpMessage += String(LED_STYLE);
+  httpMessage += FPSTR(HTTP_HEAD_END);
+   httpMessage += String(F("<img src='data:image/jpeg;base64,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' />"));
+    httpMessage += String(F("<h1>LED-ez</h1><b> Choose a color"));
+    httpMessage += String(F("<form method='set'action='/colour'><label>Color:</label> <input class='jscolor {onFineChange:'update(this)'}' value='ffcc00' name='color'> "));
+    httpMessage += String("<label>Brighness:</label><br/> <input type='range' min='1' max='100' value='"+String(brightness) + "' class='slider' name='brightness'/>");
+    httpMessage += String(F("<br/><button type='submit'>Set</input></button></form>"));
+    httpMessage += String(F("<script>function update(picker) { document.getElementById('rgb').innerHTML =  Math.round(picker.rgb[0]) + ', ' +        Math.round(picker.rgb[1]) + ', ' +        Math.round(picker.rgb[2]);}</script>"));
+    httpMessage += String(F("<br/><hr><br/><form method='get' action='/'>"));
+    httpMessage += String(F("<button type='submit'>return home</button></form>"));
+   
+    httpMessage += FPSTR(HTTP_END);
+    webServer.send(200, "text/html", httpMessage);
+ }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void webHandleSaveConfig()
@@ -449,13 +515,13 @@ void webHandleSaveConfig()
     {
 
       if (SPIFFS.begin()) {
-    debugLn("mounted file system");
+    debuglineprint("mounted file system");
     if (SPIFFS.exists("/config.json")) {
       //file exists, reading and loading
-      debugLn("reading config file");
+      debuglineprint("reading config file");
       File configFile = SPIFFS.open("/config.json", "r");
       if (configFile) {
-        debugLn("opened config file");
+        debuglineprint("opened config file");
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
@@ -464,21 +530,21 @@ void webHandleSaveConfig()
         JsonObject& json = jsonBuffer.parseObject(buf.get());
         json.printTo(Serial);
         if (json.success()) {
-          debugLn("\nparsed json");
+          debuglineprint("\nparsed json");
          strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
          strcpy(NumberLEDUser, json["NumberLEDUser"]);
          numberLEDs = atol( json["NumberLEDUser"] );
   
-  debugLn(String(numberLEDs));
-  debugLn(String(mqtt_server));
+  debuglineprint(String(numberLEDs));
+  debuglineprint(String(mqtt_server));
         } else {
-          debugLn("failed to load json config");
+          debuglineprint("failed to load json config");
         }
         configFile.close();
       }
     }
   } else {
-    debugLn("failed to mount FS");
+    debuglineprint("failed to mount FS");
   }
  
  
@@ -497,8 +563,15 @@ void webHandleSaveConfig()
 }
 
 void webHandleLEDroutine(){
+if (webServer.arg("Speed") != ""){
 
- 
+animationspeed = webServer.arg("Speed").toInt();
+}
+
+
+if (webServer.arg("Brightness") != ""){
+brightness = webServer.arg("Brightness").toInt();
+}
 if (webServer.arg("Seteffect") != ""){
   client.publish(setpowerPubTopic, "ON");
  setPower = "ON";
@@ -510,6 +583,8 @@ if (webServer.arg("Seteffect") != ""){
       setPower = "OFF";
   
   }
+  String Bright = String(brightness);
+  String Speed = String(animationspeed);
 
  String httpMessage = FPSTR(HTTP_HEAD);
   httpMessage += String(F ("<meta charset=utf8 />"));
@@ -522,10 +597,14 @@ if (webServer.arg("Seteffect") != ""){
    httpMessage += String(F("<img src='data:image/jpeg;base64,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' />"));
  
     httpMessage += String(F("<h1>LED-ez</h1><b> Clicking an effect should trigger it on your device"));
-  
     httpMessage += String(F("<br/><hr><br/><form method='get' action='/'>"));
     httpMessage += String(F("<button type='submit'>return home</button></form>"));
     httpMessage += String(F("<br/><hr><br/><form method='get' action='/LEDroutine'>"));
+    httpMessage += String(F("<label>Brightness</label>"));
+    httpMessage += String("<input type='range' min='1' max='100' value='" + Bright  +"' name='Brightness' class='slider' id='Brightnes'/>");
+    httpMessage += String(F("<label>Speed</label>"));
+    httpMessage += String("<input type='range' min='1' max='150' value='" + Speed  +"' class='slider'name='Speed'  id='Speed'/>");
+   // httpMessage += String(F("<br/><button type='submit'>Set </button></form>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='Christmas'>Christmas</button>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='StPatty'>St Patty</button>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='Valentine'>Valentine</button>"));
@@ -655,7 +734,7 @@ void webHandleEspFirmware()
   httpMessage += FPSTR(HTTP_END);
   webServer.send(200, "text/html", httpMessage);
 
-   debugLn("ESPFW: Attempting ESP firmware update from: " + String(webServer.arg("espFirmware")));
+   debuglineprint("ESPFW: Attempting ESP firmware update from: " + String(webServer.arg("espFirmware")));
   startEspOTA(webServer.arg("espFirmware"));
 }
 void webHandleMQtt()

@@ -15,9 +15,7 @@ char mqtt_password[32] = "DVES_PASS";
 char versionno[8] = "x.x.08";
 //const int NUM_LEDS =4;
 
-/******* Debug **************/
-#define DEBUGSERIAL
-#define DEBUGTELNET  // Open a read-only telnet debug port
+
 
 #define DATA_PIN    D4 //on the NodeMCU 1.0, FastLED will default to the D5 pin after throwing an error during compiling. Leave as is. 
 #define LED_TYPE    WS2811 //change to match your LED type WS2812
@@ -25,7 +23,7 @@ char versionno[8] = "x.x.08";
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 #define COLOR_ORDER1 GRB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 
-#define NUM_LEDS8    1000 //change to match your setup
+#define NUM_LEDS8    300 //change to match your setup
 
 
 #define espName "LEDstrip" //change this to whatever you want to call your device
@@ -213,7 +211,18 @@ DEFINE_GRADIENT_PALETTE( bhw2_greenman_gp ) {
 // http://soliton.vm.bytemark.co.uk/pub/cpt-city/ds/icons/tn/Pills-3.png.index.html
 // converted for FastLED with gammas (2.6, 2.2, 2.5)
 // Size: 12 bytes of program space.
+int hex2dec(byte c) { // converts one HEX character into a number
+  if (c >= '0' && c <= '9') {
+    return c - '0';
+  } 
+  else if (c >= 'A' && c <= 'F') {
+    return c - 'A' + 10;
+  }
+  else if (c >= 'a' && c <= 'f') {
+    return c - 32 - 'A' + 10;
+  }
 
+}
 DEFINE_GRADIENT_PALETTE( Pills_3_gp ) {
     0,   4, 12,122,
   127,  55, 58, 50,
@@ -368,12 +377,8 @@ const char *getDeviceID() {
 
   return identifier;
 }
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-// Telnet                                                        //
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-#ifdef DEBUGTELNET
 void handleTelnetClient()
-{ 
+{ // Basic telnet client handling code from: https://gist.github.com/tablatronix/4793677ca748f5f584c95ec4a2b10303
   if (telnetServer.hasClient())
   {
     // client is connected
@@ -385,7 +390,7 @@ void handleTelnetClient()
     }
     else
     {
-      telnetServer.available().stop(); // have client, block new connections
+      telnetServer.available().stop(); // have client, block new conections
     }
   }
   // Handle client input from telnet connection.
@@ -399,23 +404,20 @@ void handleTelnetClient()
     }
   }
 }
-#endif
 
-void debugLn(String debugText)
-{ 
+
+void debuglineprint(String debugText)
+{ // Debug output line of text to our debug targets
   String debugTimeText = "[+" + String(float(millis()) / 1000, 3) + "s] " + debugText;
-  #ifdef DEBUGSERIAL
-    Serial.println(debugTimeText);
-    Serial.flush();
-  #endif
-  #ifdef DEBUGTELNET
-    if (telnetClient.connected())
-    {
-      debugTimeText += "\r\n";
-      const size_t len = debugTimeText.length();
-      const char *buffer = debugTimeText.c_str();
-      telnetClient.write(buffer, len);
-      handleTelnetClient();
-    }
-  #endif
+  Serial.print(debugTimeText);
+  Serial.print(debugTimeText);
+  Serial.flush();
+  if (telnetClient.connected())
+  {
+    debugTimeText += "\r\n";
+    const size_t len = debugTimeText.length();
+    const char *buffer = debugTimeText.c_str();
+    telnetClient.write(buffer, len);
+    handleTelnetClient();
+  }
 }

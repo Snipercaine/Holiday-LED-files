@@ -373,7 +373,7 @@ void SetTheEffect(){
 
   if (setEffect == "Lightning") {
     twinklecounter = twinklecounter + 1;                     //Resets strip if previous animation was running
-    debugLn(String(twinklecounter));
+    debuglineprint(String(twinklecounter));
     if (twinklecounter < 2) {
       FastLED.clear();
       FastLED.show();
