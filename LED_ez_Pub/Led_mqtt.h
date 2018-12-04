@@ -5,7 +5,7 @@ void mqttCallback(String &topic, String &payload)
 
   if (String(topic) == setpowerSubTopic) {
     setPower = String(message_buff);
-    debuglineprint("Set Power: " + setPower);
+    debugLn("Set Power: " + setPower);
     if (setPower == "OFF") {
       client.publish(setpowerPubTopic, "OFF");
     }
@@ -22,7 +22,7 @@ void mqttCallback(String &topic, String &payload)
   //  }
   //  message_buff[i] = '\0';
     setEffect = String(payload);
-    debuglineprint("Set Effect: " + setEffect);
+    debugLn("Set Effect: " + setEffect);
     setPower = "ON";
     client.publish(setpowerPubTopic, "ON");
     if (setEffect == "Twinkle") {
@@ -40,7 +40,7 @@ void mqttCallback(String &topic, String &payload)
    // }
   //  message_buff[i] = '\0';
     setBrightness = String(payload);
-    debuglineprint("Set Brightness: " + setBrightness);
+    debugLn("Set Brightness: " + setBrightness);
     brightness = setBrightness.toInt();
     setPower = "ON";
     client.publish(setpowerPubTopic, "ON");
@@ -53,7 +53,7 @@ void mqttCallback(String &topic, String &payload)
  //   message_buff[i] = '\0';
     client.publish(setcolorPubTopic, message_buff);
     setColor = String(payload);
-    debuglineprint("Set Color: " + setColor);
+    debugLn("Set Color: " + setColor);
     setPower = "ON";
     client.publish(setpowerPubTopic, "ON");
     }
@@ -81,9 +81,9 @@ void mqttConnect()
       ArduinoOTA.handle();
     }
   }
-  debuglineprint( "MQTTServer");
+  debugLn( "MQTTServer");
   
-  debuglineprint( String(mqtt_server));
+  debugLn( String(mqtt_server));
     // Loop until we're reconnected to MQTT
     if (mqtt_server[0] != 0){
   while (!client.connected())
@@ -98,13 +98,13 @@ void mqttConnect()
       webServer.handleClient();
       ArduinoOTA.handle();
 
-  debuglineprint("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
+  debugLn("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
     if (client.connect(espName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
       // Subscribe to our incoming topics
       Mqttconnected = 1 ;
       client.publish(lwtTopic,"Online", true);
-      debuglineprint("MQTT: Connected");
+      debugLn("MQTT: Connected");
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();

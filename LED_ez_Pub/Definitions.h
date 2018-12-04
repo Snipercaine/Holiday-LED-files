@@ -15,7 +15,9 @@ char mqtt_password[32] = "DVES_PASS";
 char versionno[8] = "x.x.08";
 //const int NUM_LEDS =4;
 
-
+/******* Debug **************/
+#define DEBUGSERIAL
+#define DEBUGTELNET  // Open a read-only telnet debug port
 
 #define DATA_PIN    D4 //on the NodeMCU 1.0, FastLED will default to the D5 pin after throwing an error during compiling. Leave as is. 
 #define LED_TYPE    WS2811 //change to match your LED type WS2812
@@ -366,8 +368,12 @@ const char *getDeviceID() {
 
   return identifier;
 }
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+// Telnet                                                        //
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+#ifdef DEBUGTELNET
 void handleTelnetClient()
-{ // Basic telnet client handling code from: https://gist.github.com/tablatronix/4793677ca748f5f584c95ec4a2b10303
+{ 
   if (telnetServer.hasClient())
   {
     // client is connected
@@ -379,7 +385,7 @@ void handleTelnetClient()
     }
     else
     {
-      telnetServer.available().stop(); // have client, block new conections
+      telnetServer.available().stop(); // have client, block new connections
     }
   }
   // Handle client input from telnet connection.
@@ -393,20 +399,23 @@ void handleTelnetClient()
     }
   }
 }
+#endif
 
-
-void debuglineprint(String debugText)
-{ // Debug output line of text to our debug targets
+void debugLn(String debugText)
+{ 
   String debugTimeText = "[+" + String(float(millis()) / 1000, 3) + "s] " + debugText;
-  Serial.print(debugTimeText);
-  Serial.print(debugTimeText);
-  Serial.flush();
-  if (telnetClient.connected())
-  {
-    debugTimeText += "\r\n";
-    const size_t len = debugTimeText.length();
-    const char *buffer = debugTimeText.c_str();
-    telnetClient.write(buffer, len);
-    handleTelnetClient();
-  }
+  #ifdef DEBUGSERIAL
+    Serial.println(debugTimeText);
+    Serial.flush();
+  #endif
+  #ifdef DEBUGTELNET
+    if (telnetClient.connected())
+    {
+      debugTimeText += "\r\n";
+      const size_t len = debugTimeText.length();
+      const char *buffer = debugTimeText.c_str();
+      telnetClient.write(buffer, len);
+      handleTelnetClient();
+    }
+  #endif
 }

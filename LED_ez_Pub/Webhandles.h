@@ -12,19 +12,19 @@ void readSavedConfig()
 //  json["LED_TYPEUSER"] = LED_TYPEUSER;
 
   // Read configuration from FS json
-  debuglineprint(F("SPIFFS: mounting FS..."));
+  debugLn(F("SPIFFS: mounting FS..."));
 
   if (SPIFFS.begin())
   {
-    debuglineprint(F("SPIFFS: mounted file system"));
+    debugLn(F("SPIFFS: mounted file system"));
     if (SPIFFS.exists("/config.json"))
     {
       // File exists, reading and loading
-      debuglineprint(F("SPIFFS: reading config file"));
+      debugLn(F("SPIFFS: reading config file"));
       File configFile = SPIFFS.open("/config.json", "r");
       if (configFile)
       {
-        debuglineprint(F("SPIFFS: opened config file"));
+        debugLn(F("SPIFFS: opened config file"));
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
@@ -64,18 +64,18 @@ void readSavedConfig()
 //          }
           String configJsonStr;
           configJson.printTo(configJsonStr);
-          debuglineprint(String(F("SPIFFS: parsed json:")) + configJsonStr);
+          debugLn(String(F("SPIFFS: parsed json:")) + configJsonStr);
         }
         else
         {
-          debuglineprint(F("SPIFFS: [ERROR] Failed to load json config"));
+          debugLn(F("SPIFFS: [ERROR] Failed to load json config"));
         }
       }
     }
   }
   else
   {
-    debuglineprint(F("SPIFFS: [ERROR] Failed to mount FS"));
+    debugLn(F("SPIFFS: [ERROR] Failed to mount FS"));
   }
 }
 
@@ -83,7 +83,7 @@ void readSavedConfig()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void saveConfigCallback()
 { // Callback notifying us of the need to save config
-  debuglineprint(F("SPIFFS: Configuration changed, flagging for save"));
+  debugLn(F("SPIFFS: Configuration changed, flagging for save"));
   shouldSaveConfig = true;
 }
 
@@ -105,7 +105,7 @@ void saveUpdatedConfig()
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile)
   {
-    debuglineprint(F("SPIFFS: Failed to open config file for writing"));
+    debugLn(F("SPIFFS: Failed to open config file for writing"));
   }
   else
   {
@@ -158,21 +158,21 @@ void startEspOTA(String espOtaUrl)
   WiFiUDP::stopAll(); // Keep mDNS responder from breaking things
 
   t_httpUpdate_return returnCode = ESPhttpUpdate.update("https://github.com/GeradB/Holiday-LED-files/blob/development/BruhZzs_LEDs_Pub/LED_ez_Pub.ino.d1_mini.bin");
-   debuglineprint(espOtaUrl);
+   debugLn(espOtaUrl);
   switch (returnCode)
   {
   case HTTP_UPDATE_FAILED:
-    debuglineprint("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
+    debugLn("ESPFW: HTTP_UPDATE_FAILED error " + String(ESPhttpUpdate.getLastError()) + " " + ESPhttpUpdate.getLastErrorString());
     Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
               
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
-    debuglineprint(F("ESPFW: HTTP_UPDATE_NO_UPDATES"));
+    debugLn(F("ESPFW: HTTP_UPDATE_NO_UPDATES"));
     break;
 
   case HTTP_UPDATE_OK:
-    debuglineprint(F("ESPFW: HTTP_UPDATE_OK"));
+    debugLn(F("ESPFW: HTTP_UPDATE_OK"));
     espReset();
   }
   delay(5000);
@@ -203,8 +203,8 @@ void setup_wifi() {
 
   delay(10);
   //();
- debuglineprint("Connecting to ");
-  debuglineprint(wifi_ssid);
+ debugLn("Connecting to ");
+  debugLn(wifi_ssid);
 
 //  WiFi.mode(WIFI_STA);
 //  WiFi.hostname(mcuHostName);
@@ -215,10 +215,10 @@ void setup_wifi() {
 //    Serial.print(".");
 //  }
 //
-//  debuglineprint("");
-//  debuglineprint("WiFi connected");
-//  debuglineprint("IP address: ");
-// debuglineprint(WiFi.localIP());
+//  debugLn("");
+//  debugLn("WiFi connected");
+//  debugLn("IP address: ");
+// debugLn(WiFi.localIP());
   
   
   // Assign our hostname (default esp_name + left 6 MAC) before connecting to WiFi
@@ -278,7 +278,7 @@ void setup_wifi() {
     // and goes into a blocking loop awaiting configuration.
     if (!wifiManager.autoConnect(wifiConfigAP, wifiConfigPass))
     { // Reset and try again
-      debuglineprint(F("WIFI: Failed to connect and hit timeout"));
+      debugLn(F("WIFI: Failed to connect and hit timeout"));
       espReset();
       
 }
@@ -292,8 +292,8 @@ void setup_wifi() {
     strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
      numberLEDs = atol( custom_mqttNumleds.getValue() );
 
-  debuglineprint(String(numberLEDs));
-  debuglineprint(String(mqtt_server));
+  debugLn(String(numberLEDs));
+  debugLn(String(mqtt_server));
 
      if (shouldSaveConfig)
     { // Save the custom parameters to FS
@@ -449,13 +449,13 @@ void webHandleSaveConfig()
     {
 
       if (SPIFFS.begin()) {
-    debuglineprint("mounted file system");
+    debugLn("mounted file system");
     if (SPIFFS.exists("/config.json")) {
       //file exists, reading and loading
-      debuglineprint("reading config file");
+      debugLn("reading config file");
       File configFile = SPIFFS.open("/config.json", "r");
       if (configFile) {
-        debuglineprint("opened config file");
+        debugLn("opened config file");
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
@@ -464,21 +464,21 @@ void webHandleSaveConfig()
         JsonObject& json = jsonBuffer.parseObject(buf.get());
         json.printTo(Serial);
         if (json.success()) {
-          debuglineprint("\nparsed json");
+          debugLn("\nparsed json");
          strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
          strcpy(NumberLEDUser, json["NumberLEDUser"]);
          numberLEDs = atol( json["NumberLEDUser"] );
   
-  debuglineprint(String(numberLEDs));
-  debuglineprint(String(mqtt_server));
+  debugLn(String(numberLEDs));
+  debugLn(String(mqtt_server));
         } else {
-          debuglineprint("failed to load json config");
+          debugLn("failed to load json config");
         }
         configFile.close();
       }
     }
   } else {
-    debuglineprint("failed to mount FS");
+    debugLn("failed to mount FS");
   }
  
  
@@ -655,7 +655,7 @@ void webHandleEspFirmware()
   httpMessage += FPSTR(HTTP_END);
   webServer.send(200, "text/html", httpMessage);
 
-   debuglineprint("ESPFW: Attempting ESP firmware update from: " + String(webServer.arg("espFirmware")));
+   debugLn("ESPFW: Attempting ESP firmware update from: " + String(webServer.arg("espFirmware")));
   startEspOTA(webServer.arg("espFirmware"));
 }
 void webHandleMQtt()

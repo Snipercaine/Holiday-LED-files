@@ -20,9 +20,9 @@
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-#include <SoftwareSerial.h>
-#include <TimeLib.h>                            // Time library
-#include <ESP8266WiFi.h>
+//#include <SoftwareSerial.h>
+//#include <TimeLib.h>                            // Time library
+//#include <ESP8266WiFi.h>
 #include <MQTT.h>
 #include <FastLED.h>
 #include <ESP8266mDNS.h>
@@ -44,7 +44,7 @@ void setup() {
   
   Serial.begin(115200);
 
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 //read configuration from FS json
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +68,7 @@ void setup() {
   webServer.on("/saveConfig", webHandleSaveConfig);
   webServer.on("/resetConfig", webHandleResetConfig);
   webServer.on("/LEDroutine", webHandleLEDroutine);
-   webServer.on("/espfirmware", webHandleEspFirmware);
+  webServer.on("/espfirmware", webHandleEspFirmware);
   webServer.on("/espfirmware", webHandleEspFirmware);
   webServer.on("/firmware", webHandleFirmware);
   webServer.on("/MQtt", webHandleMQtt);
@@ -76,14 +76,14 @@ void setup() {
   //webServer.onNotFound(webHandleNotFound);
   webServer.begin();
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  debuglineprint(String(mqtt_server));
+  debugLn(String(mqtt_server));
   Serial.begin(115200);
-  debuglineprint(String(numberLEDs));
+  debugLn(String(numberLEDs));
   //clean FS, for testing
   //SPIFFS.format();
+  
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OTA
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,10 +102,10 @@ void setup() {
     } else { // U_SPIFFS
       type = "filesystem";
     }
-     debuglineprint("Start updating " + type);
+     debugLn("Start updating " + type);
   });
   ArduinoOTA.onEnd([]() {
-    debuglineprint("\nEnd");
+    debugLn("\nEnd");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
@@ -113,30 +113,31 @@ void setup() {
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR) {
-      debuglineprint("Auth Failed");
+      debugLn("Auth Failed");
     } else if (error == OTA_BEGIN_ERROR) {
-      debuglineprint("Begin Failed");
+      debugLn("Begin Failed");
     } else if (error == OTA_CONNECT_ERROR) {
-      debuglineprint("Connect Failed");
+      debugLn("Connect Failed");
     } else if (error == OTA_RECEIVE_ERROR) {
-      debuglineprint("Receive Failed");
+      debugLn("Receive Failed");
     } else if (error == OTA_END_ERROR) {
-      debuglineprint("End Failed");
+      debugLn("End Failed");
     }
   });
   ArduinoOTA.begin();
-  debuglineprint("Ready");
+  debugLn("Ready");
   Serial.print("IP address: ");
-  debuglineprint(WiFi.localIP().toString());
+  debugLn(WiFi.localIP().toString());
+  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Setup telnet server for remote debug output
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   telnetServer.setNoDelay(true);
   telnetServer.begin();
-   debuglineprint(String(F("TELNET: debug server enabled at telnet:")) + WiFi.localIP().toString());
-   debuglineprint( "MQTTServer");
-   debuglineprint( String(mqtt_server));
+   debugLn(String(F("TELNET: debug server enabled at telnet:")) + WiFi.localIP().toString());
+   debugLn( "MQTTServer");
+   debugLn( String(mqtt_server));
 
  ///////////////////////////////////////////////////////////////////////////////////////
  // MQTT   
@@ -151,43 +152,34 @@ void setup() {
 
 void loop() {
 
-if(mqtt_server[0]!=0){
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();  // commented out block when hand merging
-}
-  webServer.handleClient();
-  
-  while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0"))
-  { // Check WiFi is connected and that we have a valid IP, retry until we do.
-    if (WiFi.status() == WL_CONNECTED)
-    { // If we're currently connected, disconnect so we can try again
+  // Check WiFi is connected and that we have a valid IP, retry until we do.
+  while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0")) {    
+    // If we're currently connected, disconnect so we can try again   
+    if (WiFi.status() == WL_CONNECTED) { 
       WiFi.disconnect();
     }
     setup_wifi();
   }
-  
-  webServer.handleClient(); // webServer loop
-    
-  ArduinoOTA.handle();
-   SetTheEffect();
-     handleTelnetClient();
 
-if (mqtt_server[0] !=0){
-    if (!client.connected())
-  { // Check MQTT connection
-    mqttConnect();
+  if(mqtt_server[0]!=0){
+    if (!client.connected()) {
+      reconnect();
+    }
+  client.loop();  // commented out block when hand merging
+  } else {
+    FastLED.clear (); //Turns off startup LEDs after connection is made
+    FastLED.show();
   }
   
-   client.loop();
-  }else{
-      FastLED.clear (); //Turns off startup LEDs after connection is made
-      FastLED.show();
+  webServer.handleClient();
+  ArduinoOTA.handle();
+  SetTheEffect();
+  
+  #ifdef DEBUGTELNET
+    handleTelnetClient();
+  #endif
 
-    }
-
- }
+}
 
 void reconnect() {
   // Loop until we're reconnected
@@ -206,7 +198,7 @@ void reconnect() {
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.connected());
-      debuglineprint(" try again in 5 seconds");
+      debugLn(" try again in 5 seconds");
       // Wait 5 seconds before retrying
       delay(5000);
     }
