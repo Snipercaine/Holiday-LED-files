@@ -339,8 +339,8 @@ void webHandleRoot()
   httpMessage += String(F("<button type='submit'>update firmware</button></form>"));
   httpMessage += String(F("<hr><form method='get' action='MQtt'>"));
   httpMessage += String(F("<button type='submit'>MQTT Setup</button></form>"));
-  httpMessage += String(F("<button type='submit'>Board Info</button></form>"));
-
+  //httpMessage += String(F("<hr><form method='get' action='boardinfo'>"));
+  //httpMessage += String(F("<button type='submit'>Board Info</button></form>"));
 
 
   httpMessage += String(F("<hr><br/><b>No of LEDs: </b><label id='LED' name='LED' >")) + String(NumberLEDUser) + "</label></label></>";
