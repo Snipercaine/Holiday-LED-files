@@ -12,7 +12,7 @@ char mqtt_server[64] = ""; // These defaults may be overwritten with values save
 char mqtt_port[6] = "1883";
 char mqtt_user[32] = "DVES_USER";
 char mqtt_password[32] = "DVES_PASS";
-char versionno[8] = "x.x.08";
+char versionno[8] = "x.x.09";
 //const int NUM_LEDS =4;
 
 
@@ -23,7 +23,7 @@ char versionno[8] = "x.x.08";
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 #define COLOR_ORDER1 GRB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 
-#define NUM_LEDS8    1000 //change to match your setup
+#define NUM_LEDS8    150 //change to match your setup
 
 
 #define espName "LEDstrip" //change this to whatever you want to call your device
