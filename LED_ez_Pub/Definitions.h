@@ -211,18 +211,7 @@ DEFINE_GRADIENT_PALETTE( bhw2_greenman_gp ) {
 // http://soliton.vm.bytemark.co.uk/pub/cpt-city/ds/icons/tn/Pills-3.png.index.html
 // converted for FastLED with gammas (2.6, 2.2, 2.5)
 // Size: 12 bytes of program space.
-int hex2dec(byte c) { // converts one HEX character into a number
-  if (c >= '0' && c <= '9') {
-    return c - '0';
-  } 
-  else if (c >= 'A' && c <= 'F') {
-    return c - 'A' + 10;
-  }
-  else if (c >= 'a' && c <= 'f') {
-    return c - 32 - 'A' + 10;
-  }
 
-}
 DEFINE_GRADIENT_PALETTE( Pills_3_gp ) {
     0,   4, 12,122,
   127,  55, 58, 50,
