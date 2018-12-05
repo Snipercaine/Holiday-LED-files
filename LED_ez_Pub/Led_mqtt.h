@@ -154,8 +154,7 @@ void SetTopics(){
   }
 void ConnectMQtt(){
   if (mqtt_server[0] !=0){
-  client.begin(mqtt_server, atoi(mqtt_port), wifiClient);
-  client.onMessage(mqttCallback);
+    
    mqttConnect();
  }
 }
