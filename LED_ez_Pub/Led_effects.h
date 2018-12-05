@@ -36,12 +36,17 @@ void setupHalloweenPalette( CRGB A, CRGB AB, CRGB B, CRGB BA)
 
 ////////////////////////////////////////////////////////
 
-void fadeall() { for(int i = 0; i < numberLEDs; i++) { leds[i].nscale8(250); } } //for CYCLON
+void fadeall() {
+  
+  for(int i = 0;
+  i < numberLEDs; i++)
+  { leds[i].nscale8(250); }
+  } //for CYCLON
 
 void Fire2012WithPalette()
 {
-// Array of temperature readings at each simulation cell
-  static byte heat[NUM_LEDS8];
+
+   byte heat[numberLEDs];
   // Step 1.  Cool down every cell a little
     for( int i = 0; i < numberLEDs; i++) {
       heat[i] = qsub8( heat[i],  random8(0, ((COOLING * 10) / numberLEDs) + 2));
@@ -87,15 +92,22 @@ void addGlitterColor( fract8 chanceOfGlitter, int Rcolor, int Gcolor, int Bcolor
 }
 
 void Ledstringtype(){
-
+#define NUM_LEDS1  numberLEDs  
+CRGB leds1[NUM_LEDS1];
+//leds= leds1
+ // NUM_LEDS8 = NUM_LEDS1;
 if(String(LED_TYPEUSER) == "WS2811"){
-  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS8).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS1).setCorrection(TypicalLEDStrip);
   FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
   FastLED.setBrightness(brightness);
 }
 
 if(String(LED_TYPEUSER) == "WS2812") {
-  FastLED.addLeds<LED_TYPE1, DATA_PIN, COLOR_ORDER1>(leds, NUM_LEDS8).setCorrection(TypicalLEDStrip);
+ #define NUM_LEDS2  numberLEDs  
+ CRGB leds1[NUM_LEDS2];
+// leds= leds1
+ 
+  FastLED.addLeds<LED_TYPE1, DATA_PIN, COLOR_ORDER1>(leds, NUM_LEDS2).setCorrection(TypicalLEDStrip);
   FastLED.setMaxPowerInVoltsAndMilliamps(12, 10000); //experimental for power management. Feel free to try in your own setup.
   FastLED.setBrightness(brightness);
 }

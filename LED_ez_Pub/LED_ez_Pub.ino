@@ -150,6 +150,10 @@ void setup() {
   client.onMessage(mqttCallback);
  
  ConnectMQtt();
+      FastLED.clear (); //Turns off startup LEDs after connection is made
+      FastLED.show();
+      setPower = "OFF";
+  
 ///////////////////////////////////////////////////////////////////////////////////////
 // Set The LED Type and No of LED's   
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -159,7 +163,7 @@ void setup() {
 
 void loop() {
 
-  webServer.handleClient();
+  //webServer.handleClient();
   
   while ((WiFi.status() != WL_CONNECTED) || (WiFi.localIP().toString() == "0.0.0.0"))
   { // Check WiFi is connected and that we have a valid IP, retry until we do.
@@ -171,47 +175,16 @@ void loop() {
   }
   
   webServer.handleClient(); // webServer loop
-    
   ArduinoOTA.handle();
    SetTheEffect();
-     handleTelnetClient();
+   handleTelnetClient();
 
 if (mqtt_server[0] !=0){
     if (!client.connected())
   { // Check MQTT connection
     mqttConnect();
   client.loop();
-  }
   
-   
-  }else{
-      FastLED.clear (); //Turns off startup LEDs after connection is made
-      FastLED.show();
-
-    }
-
+  }
+  }
  }
-
-void reconnect() {
-  // Loop until we're reconnected
-
-  
-    while (mqtt_server[0] == 0)
-    { // Handle HTTP and OTA while we're waiting for MQTT to be configured
-      yield();
-      webServer.handleClient();
-      ArduinoOTA.handle();
-    }
-  
-  while (!client.connected()) {
-    // Attempt to connect
-    if (client.connect(mcuHostName, mqtt_user, mqtt_password)){//, lwtTopic, 1, 1, "Offline")) {
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.connected());
-      debuglineprint(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
-}

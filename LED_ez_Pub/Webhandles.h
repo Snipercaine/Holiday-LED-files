@@ -2,16 +2,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void readSavedConfig()
-{ // Read saved config.json from SPIFFS
-
-// json["mqtt_server"] = mqtt_server;
-//  json["mqtt_port"] = mqtt_port;
-//  json["mqtt_user"] = mqtt_user;
-//  json["mqtt_password"] = mqtt_password;
-//  json["NumberLEDUser"] = NumberLEDUser;
-//  json["LED_TYPEUSER"] = LED_TYPEUSER;
-
-  // Read configuration from FS json
+{ 
   debuglineprint(F("SPIFFS: mounting FS..."));
 
   if (SPIFFS.begin())
@@ -321,13 +312,13 @@ void webHandleRoot()
 { 
 
   if (webServer.arg("Seteffect") != ""){
-  client.publish(setpowerPubTopic, "ON");
+  //client.publish(setpowerPubTopic, "ON");
  setPower = "ON";
   setEffect = webServer.arg("Seteffect");
 
   }else
   {
-      client.publish(setpowerPubTopic, "OFF");
+    //  client.publish(setpowerPubTopic, "OFF");
       setPower = "OFF";
   
   }
@@ -420,13 +411,14 @@ debuglineprint(String(r));
 debuglineprint(String(g));
 debuglineprint(String(b));
 
- client.publish(setpowerPubTopic, "ON");
+ //client.publish(setpowerPubTopic, "ON");
       setPower = "ON";
       setEffect = "Solid";
       
 }
 void Webhandlecolour()
 { 
+  
  
   String httpMessage = FPSTR(HTTP_HEAD);
     
@@ -586,7 +578,7 @@ if (webServer.arg("Brightness") != ""){
 brightness = webServer.arg("Brightness").toInt();
 }
 if (webServer.arg("Seteffect") != ""){
-  client.publish(setpowerPubTopic, "ON");
+ // client.publish(setpowerPubTopic, "ON");
  setPower = "ON";
   setEffect = webServer.arg("Seteffect");
 
@@ -619,7 +611,7 @@ if (webServer.arg("Seteffect") != ""){
     httpMessage += String("<input type='range' min='1' max='150' value='" + Speed  +"' class='slider'name='Speed'  id='Speed'/>");
    // httpMessage += String(F("<br/><button type='submit'>Set </button></form>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='Christmas'>Christmas</button>"));
-    httpMessage += String(F("<button type='submit' name='Seteffect' value='StPatty'>St Patty</button>"));
+    httpMessage += String(F("<button type='submit' name='Seteffect' value='St Patty'>St Patty</button>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='Valentine'>Valentine</button>"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='Turkey Day'>Turkey Day</button>​"));
     httpMessage += String(F("<button type='submit' name='Seteffect' value='USA'>USA</button>"));

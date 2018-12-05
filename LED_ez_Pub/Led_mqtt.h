@@ -72,7 +72,7 @@ void mqttConnect()
 { // MQTT connection and subscriptions
 
   // Check to see if we have a broker configured and notify the user if not
-  if (mqtt_server[0] == 0)
+  if (!client.connected())
   {
     while (mqtt_server[0] == 0)
     { // Handle HTTP and OTA while we're waiting for MQTT to be configured
@@ -80,7 +80,7 @@ void mqttConnect()
       webServer.handleClient();
       ArduinoOTA.handle();
     }
-  }
+  
   debuglineprint( "MQTTServer");
   
   debuglineprint( String(mqtt_server));
@@ -99,41 +99,37 @@ void mqttConnect()
       ArduinoOTA.handle();
 
   debuglineprint("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
+
     if (client.connect(espName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
       // Subscribe to our incoming topics
       Mqttconnected = 1 ;
       client.publish(lwtTopic,"Online", true);
       debuglineprint("MQTT: Connected");
-
-      FastLED.clear (); //Turns off startup LEDs after connection is made
-      FastLED.show();
-
       client.subscribe(setcolorSubTopic);
       client.subscribe(setbrightnessTopic);
-      //client.subscribe(setcolortemp);
       client.subscribe(setpowerSubTopic);
       client.subscribe(seteffectSubTopic);
       client.subscribe(setanimationspeedTopic);
       client.publish(setpowerPubTopic, "OFF");
-      mqttReconnectCount = mqttReconnectCount + 1;
-      unsigned long mqttReconnectTimeout = 10000;  // timeout for MQTT reconnect
-      unsigned long mqttReconnectTimer = millis(); // record current time for our timeout
-      while ((millis() - mqttReconnectTimer) < mqttReconnectTimeout)
-      { // Handle HTTP and OTA while we're waiting for MQTT to reconnect
-        yield();
-        webServer.handleClient();
-        ArduinoOTA.handle();
-      }
-      if(mqttReconnectCount >5 ){
-    WiFi.disconnect();  
-        }
+      //mqttReconnectCount = mqttReconnectCount + 1;
+      //unsigned long mqttReconnectTimeout = 10000;  // timeout for MQTT reconnect
+      //..unsigned long mqttReconnectTimer = millis(); // record current time for our timeout
+//      while ((millis() - mqttReconnectTimer) < mqttReconnectTimeout)
+//      { // Handle HTTP and OTA while we're waiting for MQTT to reconnect
+//        yield();
+//        webServer.handleClient();
+//        ArduinoOTA.handle();
+//      }
+
     }}}
   }else{
-    
-      FastLED.clear (); //Turns off startup LEDs after connection is made
-      FastLED.show();
-
+      Mqttconnected = 0 ;
+         
+        yield();
+        webServer.handleClient();
+        ArduinoOTA.handle(); 
+        }
     }
 }
 
