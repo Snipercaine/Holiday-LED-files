@@ -12,7 +12,7 @@ char mqtt_server[64] = ""; // These defaults may be overwritten with values save
 char mqtt_port[6] = "1883";
 char mqtt_user[32] = "DVES_USER";
 char mqtt_password[32] = "DVES_PASS";
-char versionno[8] = "x.x.09";
+char versionno[8] = "0.7.18";
 //const int NUM_LEDS =4;
 
 
