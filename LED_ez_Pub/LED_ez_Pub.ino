@@ -143,7 +143,7 @@ void setup() {
   telnetServer.setNoDelay(true);
   telnetServer.begin();
    debuglineprint(String(F("TELNET: debug server enabled at telnet:")) + WiFi.localIP().toString());
-   debuglineprint( "MQTTServer");
+   debuglineprint( "mqtt_server");
    debuglineprint( String(mqtt_server));
 
  ///////////////////////////////////////////////////////////////////////////////////////
@@ -177,8 +177,8 @@ void loop() {
     setup_wifi();
   }
   
-  webServer.handleClient(); // webServer loop
-  ArduinoOTA.handle();
+   webServer.handleClient(); // webServer loop
+   ArduinoOTA.handle();
    SetTheEffect();
    handleTelnetClient();
 
@@ -186,8 +186,7 @@ if (mqtt_server[0] !=0){
     if (!client.connected())
   { // Check MQTT connection
     mqttConnect();
-  client.loop();
-  
-  }
+   }
+   client.loop();
   }
  }
