@@ -49,8 +49,8 @@ void mqttCallback(String &topic, String &payload)
   if (String(topic) == setcolorSubTopic) {
     //for (i = 0; i < length; i++) {
     //  message_buff[i] = payload[i];
-   // }
- //   message_buff[i] = '\0';
+    // }
+    //   message_buff[i] = '\0';
     client.publish(setcolorPubTopic, message_buff);
     setColor = String(payload);
     debuglineprint("Set Color: " + setColor);
@@ -59,10 +59,10 @@ void mqttCallback(String &topic, String &payload)
     }
 
   if (String(topic) == setanimationspeedTopic) {
-  //  for (i = 0; i < length; i++) {
- //     message_buff[i] = payload[i];
- //   }
-  //  message_buff[i] = '\0';
+    //  for (i = 0; i < length; i++) {
+    //     message_buff[i] = payload[i];
+    //   }
+    //  message_buff[i] = '\0';
     setAnimationSpeed = String(payload);
     animationspeed = setAnimationSpeed.toInt();
   }
@@ -70,9 +70,11 @@ void mqttCallback(String &topic, String &payload)
 
 void mqttConnect()
 { // MQTT connection and subscriptions
-
-  // Check to see if we have a broker configured and notify the user if not
-  if (!client.connected())
+  static bool mqttFirstConnect = true; // For the first connection, we want to send an OFF/ON state to
+                                       // trigger any automations, but skip that if we reconnect while
+                                       // still running the sketch
+  // Check to see if we have a broker configured 
+  if (mqtt_server[0] == 0)
   {
     while (mqtt_server[0] == 0)
     { // Handle HTTP and OTA while we're waiting for MQTT to be configured
@@ -80,27 +82,20 @@ void mqttConnect()
       webServer.handleClient();
       ArduinoOTA.handle();
     }
-  
-  debuglineprint( "MQTTServer");
-  
-  debuglineprint( String(mqtt_server));
-    // Loop until we're reconnected to MQTT
-    if (mqtt_server[0] != 0){
+  }
+
+  // Loop until we're reconnected to MQTT
   while (!client.connected())
   {
-
-       static uint8_t mqttReconnectCount = 0;
-    mqttClientId = String(espName);
+    // Create a reconnect counter
+    static uint8_t mqttReconnectCount = 0;
+    // Generate an MQTT client ID as haspNode + our MAC address
     // Set keepAlive, cleanSession, timeout
-  if(String(mqtt_server)!=""){
-
-      yield();
-      webServer.handleClient();
-      ArduinoOTA.handle();
-
-  debuglineprint("MQTT: Attempting connection to " + String(mqtt_server) + " as " + mcuHostName);
-
-    if (client.connect(espName, mqtt_user, mqtt_password))
+    client.setOptions(30, true, 5000);
+    // declare LWT
+    //ient.publish(lwtTopic,"Online", true);
+    client.setWill(lwtTopic, "OFF");
+    if (client.connect(mqttClientId.c_str(), mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
       // Subscribe to our incoming topics
       Mqttconnected = 1 ;
@@ -112,26 +107,43 @@ void mqttConnect()
       client.subscribe(seteffectSubTopic);
       client.subscribe(setanimationspeedTopic);
       client.publish(setpowerPubTopic, "OFF");
-      //mqttReconnectCount = mqttReconnectCount + 1;
-      //unsigned long mqttReconnectTimeout = 10000;  // timeout for MQTT reconnect
-      //..unsigned long mqttReconnectTimer = millis(); // record current time for our timeout
-//      while ((millis() - mqttReconnectTimer) < mqttReconnectTimeout)
-//      { // Handle HTTP and OTA while we're waiting for MQTT to reconnect
-//        yield();
-//        webServer.handleClient();
-//        ArduinoOTA.handle();
-//      }
 
-    }}}
-  }else{
-      Mqttconnected = 0 ;
-         
+      if (mqttFirstConnect)
+      { // Force any subscribed clients to toggle OFF/ON when we first connect to
+        // "ON" will be sent by the mqttStatusTopic subscription action.
+        debuglineprint(String(F("MQTT: binary_sensor state: [")) + lwtTopic + "] : [OFF]");
+        client.publish(lwtTopic, "OFF", true, 1);
+        mqttFirstConnect = false;
+      }
+      else
+    {
+        debuglineprint(String(F("MQTT: binary_sensor state: [")) + lwtTopic + "] : [ON]");
+      }
+      mqttReconnectCount = 0;
+      debuglineprint(F("MQTT: connected"));
+    }
+
+    else
+
+    { // Retry until we give up and restart after connectTimeout seconds
+      mqttReconnectCount++;
+      if (mqttReconnectCount > ((connectTimeout / 10) - 1))
+      {
+        debuglineprint(String(F("MQTT connection attempt ")) + String(mqttReconnectCount) + String(F(" failed with rc ")) + String(client.returnCode()) + String(F(".  Restarting device.")));
+        espReset();
+      }
+      debuglineprint(String(F("MQTT connection attempt ")) + String(mqttReconnectCount) + String(F(" failed with rc ")) + String(client.returnCode()) + String(F(".  Trying again in 10 seconds.")));
+      unsigned long mqttReconnectTimer = millis(); // record current time for our timeout
+      while ((millis() - mqttReconnectTimer) < 10000)
+      { // Handle HTTP and OTA while we're waiting 10sec for MQTT to reconnect
         yield();
         webServer.handleClient();
-        ArduinoOTA.handle(); 
-        }
+        ArduinoOTA.handle();
+      }
     }
+  }
 }
+
 
 void SetTopics(){
   

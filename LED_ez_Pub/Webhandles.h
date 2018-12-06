@@ -405,9 +405,11 @@ void colorConverter(String hex)
   Gcolor = g;
   Bcolor  = b;
 
-
+  debuglineprint("RED");
   debuglineprint(String(r));
+  debuglineprint("Green");
   debuglineprint(String(g));
+  debuglineprint("Blue");
   debuglineprint(String(b));
 
   //client.publish(setpowerPubTopic, "ON");
