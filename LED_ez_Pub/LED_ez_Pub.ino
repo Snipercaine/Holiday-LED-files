@@ -10,7 +10,7 @@
 //
 
 //esp8266 ver 2.4.2 board manager ..
-///wifi manager tzapu latest not beta.test.
+///wifi manager tzapu latest not beta.
 
 #include <FS.h>
 //#include <WiFiUdp.h>
