@@ -9,7 +9,7 @@
 // Thanks To Luma for pieces of the code, Bruh for LED effects and initial Sketch ..... etc.
 //
 
-//esp8266 ver 2.4.2 board manager ..
+//esp8266 ver 2.4.2 board manager ...
 ///wifi manager tzapu latest not beta.test.
 
 #include <FS.h>
