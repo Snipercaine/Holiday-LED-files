@@ -241,7 +241,7 @@ String setColorTemp;
 int Rcolor = 0;
 int Gcolor = 0;
 int Bcolor = 0;
-CRGB leds[NUM_LEDS8];
+
 char mcuHostName[64]; 
 char lwtTopic[96];  
 char colorstatusPubTopic[96];    
@@ -257,10 +257,11 @@ char setanimationspeedTopic[96];
 String mqttClientId; 
 bool Mqttconnected = 0 ;
 char NumberLEDUser[6]= "2";
-long numberLEDs = 0;
+long numberLEDs = 2;
 char LED_TYPEUSER[10] ="WS2811";
 bool mqttFirstConnect;
 const unsigned long connectTimeout = 300;
+CRGB leds[1000]; //[numberLEDs];
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
 CRGBPalette16 hailPalettestriped; //for Hail
@@ -289,7 +290,6 @@ uint8_t myfade = 255;                                         // Starting bright
 #define maxsteps 16                                           // Case statement wouldn't allow a variable.
 uint8_t bgcol = 0;                                            // Background colour rotates.
 int thisdelay = 20;                                           // Standard delay value.
-
 /**************FOR RAINBOW***********/
 uint8_t thishue = 0;                                          // Starting hue value.
 uint8_t deltahue = 10;
@@ -308,8 +308,15 @@ uint8_t ledlen;
 int lightningcounter = 0;
 
 /********FOR FUNKBOX EFFECTS**********/
-int idex = 0;                //-LED INDEX (0 to NumberLEDUser-1
-int TOP_INDEX = int(String(NumberLEDUser).toInt() / 2);
+int idex = numberLEDs;                //-LED INDEX (0 to NumberLEDUser-1
+int TOP_INDEX = (numberLEDs / 2);
+int antipodal_index(int i) {
+  int iN = i + TOP_INDEX;
+  if (i >= TOP_INDEX) {
+    iN = ( i + TOP_INDEX ) % numberLEDs;
+  }
+  return iN;
+}
 int thissat = 255;           //-FX LOOPS DELAY VAR
 
 //////////////////add thishue__ for Police All custom effects here/////////////////////////////////////////////////////////
@@ -318,13 +325,6 @@ int thissat = 255;           //-FX LOOPS DELAY VAR
 uint8_t thishuepolice = 0;
 uint8_t thishuehail = 64;
 uint8_t thishueLovey = 0;     
-int antipodal_index(int i) {
-  int iN = i + TOP_INDEX;
-  if (i >= TOP_INDEX) {
-    iN = ( i + TOP_INDEX ) % String(NumberLEDUser).toInt();
-  }
-  return iN;
-}
 
 /********FIRE**********/
 #define COOLING  55
