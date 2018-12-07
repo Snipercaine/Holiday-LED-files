@@ -261,7 +261,7 @@ long numberLEDs = 2;
 char LED_TYPEUSER[10] ="WS2811";
 bool mqttFirstConnect;
 const unsigned long connectTimeout = 300;
-CRGB leds[1000]; //[numberLEDs];
+CRGB leds[NUM_LEDS8]; //[numberLEDs];
 /****************FOR CANDY CANE-like desings***************/
 CRGBPalette16 currentPalettestriped; //for Candy Cane
 CRGBPalette16 hailPalettestriped; //for Hail
@@ -310,13 +310,13 @@ int lightningcounter = 0;
 /********FOR FUNKBOX EFFECTS**********/
 int idex = numberLEDs;                //-LED INDEX (0 to NumberLEDUser-1
 int TOP_INDEX = (numberLEDs / 2);
-int antipodal_index(int i) {
-  int iN = i + TOP_INDEX;
-  if (i >= TOP_INDEX) {
-    iN = ( i + TOP_INDEX ) % numberLEDs;
-  }
-  return iN;
-}
+//int antipodal_index(int i) {
+//  int iN = i + TOP_INDEX;
+//  if (i >= TOP_INDEX) {
+//    iN = ( i + TOP_INDEX ) % NUM_LEDS1;
+//  }
+//  return iN;
+//}
 int thissat = 255;           //-FX LOOPS DELAY VAR
 
 //////////////////add thishue__ for Police All custom effects here/////////////////////////////////////////////////////////
