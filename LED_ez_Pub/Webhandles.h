@@ -44,7 +44,7 @@ void readSavedConfig()
           if (configJson["NumberLEDUser"].success())
           {
             strcpy(NumberLEDUser, configJson["NumberLEDUser"]);
-           numberLEDs= String(NumberLEDUser).toInt(); 
+           NUM_LEDS1= String(NumberLEDUser).toInt(); 
           }
           if (configJson["LED_TYPEUSER"].success())
           {
@@ -282,9 +282,9 @@ void setup_wifi() {
     strcpy(espName, custom_espName.getValue());
     strcpy(LED_TYPEUSER, custom_LEDtpe.getValue());
     strcpy(NumberLEDUser, custom_mqttNumleds.getValue());
-    numberLEDs = atol( custom_mqttNumleds.getValue() );
+    NUM_LEDS1 = atol( custom_mqttNumleds.getValue() );
 
-    debuglineprint(String(numberLEDs));
+    debuglineprint(String(NUM_LEDS1));
     debuglineprint(String(mqtt_server));
 
     if (shouldSaveConfig)
@@ -301,11 +301,16 @@ void setup_wifi() {
 void webHandleRoot()
 {
   if (webServer.arg("Seteffect") != "") {
+if(MQTTclient.connected()){
+ MQTTclient.publish(setpowerPubTopic, "ON");}
+
     //MQTTclient.publish(setpowerPubTopic, "ON");
     setPower = "ON";
     setEffect = webServer.arg("Seteffect");
   } else
   {
+if(MQTTclient.connected()){
+ MQTTclient.publish(setpowerPubTopic, "OFF");}
     //  MQTTclient.publish(setpowerPubTopic, "OFF");
     setPower = "OFF";
     setEffect = "OFF";
@@ -407,8 +412,8 @@ void colorConverter(String hex)
   debuglineprint(String(g));
   debuglineprint("Blue");
   debuglineprint(String(b));
-
-  //MQTTclient.publish(setpowerPubTopic, "ON");
+if(MQTTclient.connected()){
+ MQTTclient.publish(setpowerPubTopic, "ON");}
   setPower = "ON";
   setEffect = "Solid";
 
@@ -499,7 +504,7 @@ void webHandleSaveConfig()
   { // Handle mqtt_password
     shouldSaveConfig = true;
     webServer.arg("LED").toCharArray(NumberLEDUser, 5);
-    numberLEDs = atol( NumberLEDUser );
+    NUM_LEDS1 = atol( NumberLEDUser );
   }
 
   if (shouldSaveConfig)
@@ -535,9 +540,9 @@ void webHandleSaveConfig()
               debuglineprint("\nparsed json");
               strcpy(LED_TYPEUSER,  json["LED_TYPEUSER"]);
               strcpy(NumberLEDUser, json["NumberLEDUser"]);
-              numberLEDs = atol( json["NumberLEDUser"] );
+              NUM_LEDS1 = atol( json["NumberLEDUser"] );
 
-              debuglineprint(String(numberLEDs));
+              debuglineprint(String(NUM_LEDS1));
               debuglineprint(String(mqtt_server));
             } else {
               debuglineprint("failed to load json config");
@@ -575,13 +580,21 @@ void webHandleLEDroutine() {
     brightness = webServer.arg("Brightness").toInt();
   }
   if (webServer.arg("Seteffect") != "") {
+   
+
+
     // MQTTclient.publish(setpowerPubTopic, "ON");
     setPower = "ON";
     setEffect = webServer.arg("Seteffect");
 
+if(MQTTclient.connected()){
+ MQTTclient.publish(seteffectPubTopic, webServer.arg("Seteffect"));}
   } else
   {
-    MQTTclient.publish(setpowerPubTopic, "OFF");
+if(MQTTclient.connected()){
+ MQTTclient.publish(setpowerPubTopic, "off");}
+
+//    MQTTclient.publish(setpowerPubTopic, "OFF");
     setPower = "OFF";
     SetTheEffect();
 

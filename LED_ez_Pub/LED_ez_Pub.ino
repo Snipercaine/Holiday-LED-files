@@ -153,6 +153,9 @@ void setup() {
   MQTTclient.onMessage(mqttCallback);
  
  ConnectMQtt();
+ // int Rcolor = setColor.substring(0, setColor.indexOf(',')).toInt();
+ // int Gcolor = setColor.substring(setColor.indexOf(',') + 1, setColor.lastIndexOf(',')).toInt();
+ // int Bcolor = setColor.substring(setColor.lastIndexOf(',') + 1).toInt();
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();
       setPower = "OFF";
