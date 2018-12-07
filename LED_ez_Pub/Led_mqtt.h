@@ -7,11 +7,11 @@ void mqttCallback(String &topic, String &payload)
     setPower = String(message_buff);
     debuglineprint("Set Power: " + setPower);
     if (setPower == "OFF") {
-      client.publish(setpowerPubTopic, "OFF");
+      MQTTclient.publish(setpowerPubTopic, "OFF");
     }
 
     if (setPower == "ON") {
-      client.publish(setpowerPubTopic, "ON");
+      MQTTclient.publish(setpowerPubTopic, "ON");
     }
   }
 
@@ -24,7 +24,7 @@ void mqttCallback(String &topic, String &payload)
     setEffect = String(payload);
     debuglineprint("Set Effect: " + setEffect);
     setPower = "ON";
-    client.publish(setpowerPubTopic, "ON");
+    MQTTclient.publish(setpowerPubTopic, "ON");
     if (setEffect == "Twinkle") {
       twinklecounter = 0;
     }
@@ -43,7 +43,7 @@ void mqttCallback(String &topic, String &payload)
     debuglineprint("Set Brightness: " + setBrightness);
     brightness = setBrightness.toInt();
     setPower = "ON";
-    client.publish(setpowerPubTopic, "ON");
+    MQTTclient.publish(setpowerPubTopic, "ON");
   }
 
   if (String(topic) == setcolorSubTopic) {
@@ -51,11 +51,11 @@ void mqttCallback(String &topic, String &payload)
     //  message_buff[i] = payload[i];
     // }
     //   message_buff[i] = '\0';
-    client.publish(setcolorPubTopic, message_buff);
+    MQTTclient.publish(setcolorPubTopic, message_buff);
     setColor = String(payload);
     debuglineprint("Set Color: " + setColor);
     setPower = "ON";
-    client.publish(setpowerPubTopic, "ON");
+    MQTTclient.publish(setpowerPubTopic, "ON");
     }
 
   if (String(topic) == setanimationspeedTopic) {
@@ -85,34 +85,34 @@ void mqttConnect()
   }
 
   // Loop until we're reconnected to MQTT
-  while (!client.connected())
+  while (!MQTTclient.connected())
   {
     // Create a reconnect counter
     static uint8_t mqttReconnectCount = 0;
     // Generate an MQTT client ID as haspNode + our MAC address
     // Set keepAlive, cleanSession, timeout
-    client.setOptions(30, true, 5000);
+    MQTTclient.setOptions(30, true, 5000);
     // declare LWT
     //ient.publish(lwtTopic,"Online", true);
-    client.setWill(lwtTopic, "OFF");
-    if (client.connect(mqttClientId.c_str(), mqtt_user, mqtt_password))
+    MQTTclient.setWill(lwtTopic, "OFF");
+    if (MQTTclient.connect(mcuHostName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
       // Subscribe to our incoming topics
       Mqttconnected = 1 ;
-      client.publish(lwtTopic,"Online", true);
+      MQTTclient.publish(lwtTopic,"Online", true);
       debuglineprint("MQTT: Connected");
-      client.subscribe(setcolorSubTopic);
-      client.subscribe(setbrightnessTopic);
-      client.subscribe(setpowerSubTopic);
-      client.subscribe(seteffectSubTopic);
-      client.subscribe(setanimationspeedTopic);
-      client.publish(setpowerPubTopic, "OFF");
+      MQTTclient.subscribe(setcolorSubTopic);
+      MQTTclient.subscribe(setbrightnessTopic);
+      MQTTclient.subscribe(setpowerSubTopic);
+      MQTTclient.subscribe(seteffectSubTopic);
+      MQTTclient.subscribe(setanimationspeedTopic);
+      MQTTclient.publish(setpowerPubTopic, "OFF");
 
       if (mqttFirstConnect)
       { // Force any subscribed clients to toggle OFF/ON when we first connect to
         // "ON" will be sent by the mqttStatusTopic subscription action.
         debuglineprint(String(F("MQTT: binary_sensor state: [")) + lwtTopic + "] : [OFF]");
-        client.publish(lwtTopic, "OFF", true, 1);
+        MQTTclient.publish(lwtTopic, "OFF", true, 1);
         mqttFirstConnect = false;
       }
       else
@@ -129,10 +129,10 @@ void mqttConnect()
       mqttReconnectCount++;
       if (mqttReconnectCount > ((connectTimeout / 10) - 1))
       {
-        debuglineprint(String(F("MQTT connection attempt ")) + String(mqttReconnectCount) + String(F(" failed with rc ")) + String(client.returnCode()) + String(F(".  Restarting device.")));
+        debuglineprint(String(F("MQTT connection attempt ")) + String(mqttReconnectCount) + String(F(" failed with rc ")) + String(MQTTclient.returnCode()) + String(F(".  Restarting device.")));
         espReset();
       }
-      debuglineprint(String(F("MQTT connection attempt ")) + String(mqttReconnectCount) + String(F(" failed with rc ")) + String(client.returnCode()) + String(F(".  Trying again in 10 seconds.")));
+      debuglineprint(String(F("MQTT connection attempt ")) + String(mqttReconnectCount) + String(F(" failed with rc ")) + String(MQTTclient.returnCode()) + String(F(".  Trying again in 10 seconds.")));
       unsigned long mqttReconnectTimer = millis(); // record current time for our timeout
       while ((millis() - mqttReconnectTimer) < 10000)
       { // Handle HTTP and OTA while we're waiting 10sec for MQTT to reconnect
@@ -162,7 +162,6 @@ void SetTopics(){
   }
 void ConnectMQtt(){
   if (mqtt_server[0] !=0){
-    
    mqttConnect();
  }
 }

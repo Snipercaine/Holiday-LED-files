@@ -37,13 +37,13 @@
 ////////////////////////////////////////////////////////////
 
 WiFiClient espClient; //this needs to be unique for each controller
-MQTTClient client(256);
+MQTTClient MQTTclient(256);
 
 ////////////////////////////////////////////////////////////
-
+#include "Led_effects.h"
 #include "Webhandles.h" 
 #include "Led_mqtt.h"
-#include "Led_effects.h"
+
 
 
 void setup() {
@@ -149,22 +149,28 @@ void setup() {
  ///////////////////////////////////////////////////////////////////////////////////////
  // MQTT   
  ///////////////////////////////////////////////////////////////////////////////////////
-  client.begin(mqtt_server, atoi(mqtt_port), wifiClient);
-  client.onMessage(mqttCallback);
+  MQTTclient.begin(mqtt_server, atoi(mqtt_port), wifiClient);
+  MQTTclient.onMessage(mqttCallback);
  
  ConnectMQtt();
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();
       setPower = "OFF";
-  
+  setEffect = "OFF";
 ///////////////////////////////////////////////////////////////////////////////////////
 // Set The LED Type and No of LED's   
 ///////////////////////////////////////////////////////////////////////////////////////
- Ledstringtype();
+
+TOP_INDEX = (numberLEDs / 2);
+idex = numberLEDs;
+animationspeed = 75;
 
 }
 
+
+
 void loop() {
+
 
   //webServer.handleClient();
   
@@ -183,10 +189,10 @@ void loop() {
    handleTelnetClient();
 
 if (mqtt_server[0] !=0){
-    if (!client.connected())
+    if (!MQTTclient.connected())
   { // Check MQTT connection
-    mqttConnect();
+   ConnectMQtt();
    }
-   client.loop();
+   MQTTclient.loop();
   }
  }
