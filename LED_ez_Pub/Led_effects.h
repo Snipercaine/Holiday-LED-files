@@ -75,12 +75,13 @@ if(String(LED_TYPEUSER) == "WS2812") {
   setupIndPalette( CRGB::FireBrick, CRGB::Cornsilk, CRGB::MediumBlue, CRGB::MediumBlue); //for Independence
   fill_solid(leds1, numberLEDs, CRGB(0, 0, 0)); //Startup LED Lights
   gPal = HeatColors_p; //for FIRE
+webServer.handleClient(); // webServer loop
  
  // FastLED.show();
 
 
-  
-  
+ 
+    
 
 
   if (setPower == "OFF") {
@@ -262,11 +263,12 @@ if(String(LED_TYPEUSER) == "WS2812") {
 /////////////////////////////////////////////
   
   if (setEffect == "Sinelon") {
-  
+    Rcolor =255;
+    Gcolor = 255;
+    Bcolor=255;     
     fadeToBlackBy( leds1, NUM_LEDS1, 20);
     int pos = beatsin16(13, 0, NUM_LEDS1);
-    leds1[pos] += CRGB(255, 255, 255);
-    fadeToBlackBy( leds1, NUM_LEDS1, 20);
+    leds1[pos] += CRGB(Rcolor, Gcolor, Bcolor);
   }
 
   if (setEffect == "Juggle" ) {                           // eight colored dots, weaving in and out of sync with each other
@@ -280,7 +282,7 @@ if(String(LED_TYPEUSER) == "WS2812") {
   if (setEffect == "Confetti" ) {                       // random colored speckles that blink in and fade smoothly
     fadeToBlackBy( leds1, NUM_LEDS1, 10);
     int pos = random16(NUM_LEDS1);
-    leds1[pos] += CRGB(Rcolor + random8(64), Gcolor, Bcolor);
+    leds1[pos] += CRGB(Rcolor + random16(64), Gcolor, Bcolor);
   }
 
 
@@ -332,7 +334,7 @@ if(String(LED_TYPEUSER) == "WS2812") {
       FastLED.clear();
       FastLED.show();
     }
-    const CRGB lightcolor(8, 7, 1);
+    const CRGB lightcolor(255, 255, 255);
     for ( int i = 0; i < NUM_LEDS1; i++) {
       if ( !leds1[i]) continue; // skip black pixels
       if ( leds1[i].r & 1) { // is red odd?
@@ -387,11 +389,11 @@ if(String(LED_TYPEUSER) == "WS2812") {
     if (idex >= NUM_LEDS1) {
       idex = 0;
     }
-    int idexR = idex;
+      int idexR = idex;
       int idexB = idexR + TOP_INDEX;
-  if (idexR >= TOP_INDEX) {
-    idexB = ( idexR + TOP_INDEX ) % NUM_LEDS1;
-  }
+      if (idexR >= TOP_INDEX) {
+      idexB = ( idexR + TOP_INDEX ) % NUM_LEDS1;
+}
 
     //int idexB = antipodal_index(idexR);
     int thathue = (thishuepolice + 160) % 255;
@@ -411,24 +413,25 @@ if(String(LED_TYPEUSER) == "WS2812") {
   }
 
   if (setEffect == "Police All") {                 //POLICE LIGHTS (TWO COLOR SOLID)
-      int idexR = idex;
-    int iN1;
     idex++;
-   
     if (idex >= NUM_LEDS1) {
       idex = 0;
     }
- 
-     int idexB  = idexR + (numberLEDs / 2);
-      if (idexB >= (numberLEDs / 2)) {
-       idexB = ( idexR + (numberLEDs / 2) ) % NUM_LEDS1;
+        int idexR = idex;
+       int idexB  = idexR + TOP_INDEX;
+  if (idexR >= TOP_INDEX) {
+    idexB = ( idexR + TOP_INDEX ) % NUM_LEDS1;
   }
-      
 
+    
+    //int idexB = antipodal_index(idexR);
     int thathue = (thishuepolice + 160) % 255;
     leds1[idexR] = CHSV(thishuepolice, thissat, 255);
-    leds1[idexB] = CHSV(thathue, thissat, 255);
-  }
+    leds1[idexB] = CHSV(thathue, thissat, 255);  }
+
+
+    
+  
 
 
   if (setEffect == "Candy Cane") {

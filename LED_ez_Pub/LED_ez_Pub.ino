@@ -164,9 +164,8 @@ void setup() {
 // Set The LED Type and No of LED's   
 ///////////////////////////////////////////////////////////////////////////////////////
 
-TOP_INDEX = (numberLEDs / 2);
-idex = numberLEDs;
-animationspeed = 75;
+   TOP_INDEX = (NUM_LEDS1 / 2);
+        idex = NUM_LEDS1;
 
 }
 
