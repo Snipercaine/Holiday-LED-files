@@ -81,6 +81,7 @@ void mqttConnect()
       yield();
       webServer.handleClient();
       ArduinoOTA.handle();
+   
     }
   }
 
@@ -93,8 +94,7 @@ void mqttConnect()
     // Set keepAlive, cleanSession, timeout
     MQTTclient.setOptions(30, true, 5000);
     // declare LWT
-    //ient.publish(lwtTopic,"Online", true);
-    MQTTclient.setWill(lwtTopic, "OFF");
+       MQTTclient.setWill(lwtTopic, "OFF");
     if (MQTTclient.connect(mcuHostName, mqtt_user, mqtt_password))
     { // Attempt to connect to broker, setting last will and testament
       // Subscribe to our incoming topics
@@ -162,6 +162,7 @@ void SetTopics(){
   }
 void ConnectMQtt(){
   if (mqtt_server[0] !=0){
+    SetTopics();
    mqttConnect();
  }
 }
