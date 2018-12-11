@@ -3,6 +3,8 @@
 #include <PubSubClient.h>
 #define FASTLED_INTERRUPT_RETRY_COUNT 0
 #include <FastLED.h>
+#define FL_ALIGN_PROGMEM  __attribute__ ((aligned (4)))
+
 
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
