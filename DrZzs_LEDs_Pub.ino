@@ -1,6 +1,6 @@
 
 #include <ESP8266WiFi.h>
-#include <SimpleTimer.h>
+#include <SimpleTimer.h> //Additional Lib Required
 #include <PubSubClient.h>
 #define FASTLED_INTERRUPT_RETRY_COUNT 0
 #include <FastLED.h>
@@ -28,7 +28,7 @@ int OTAport = 8266;
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 #define NUM_LEDS    175 //change to match your setup
 
-int ReconnectCounter = 0;
+int ReconnectCounter = 0; //Required to declare mqtt reconnect counter
 ///////////////DrZzs Palettes for custom BPM effects//////////////////////////
 ///////////////Add any custom palettes here//////////////////////////////////
 
@@ -305,7 +305,6 @@ unsigned int dimmer = 1;
 uint8_t ledstart;                                             // Starting location of a flash
 uint8_t ledlen;
 int lightningcounter = 0;
-int juggleChristmas = 0;
 
 /********FOR FUNKBOX EFFECTS**********/
 int idex = 0;                //-LED INDEX (0 to NUM_LEDS-1
@@ -407,27 +406,21 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   timer.setTimeout(120000, checkIn);
-
-  client.publish(setpowerpub, "", true);
-  client.publish(seteffectpub, "", true);
-  client.publish(setbrightnesspub, "", true);
-  client.publish(setcolorpub, "", true);
-  client.publish(setanimationspeedpub, "", true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void checkIn(){    
-  client.publish(setpowerpub, String(setPower).c_str(), true);
-  client.publish(seteffectpub, String(setEffect).c_str(), true);
-  client.publish(setbrightnesspub, String(setBrightness).c_str(), true);
-  client.publish(setcolorpub, String(setColor).c_str(), true);
-  client.publish(setanimationspeedpub, String(setAnimationSpeed).c_str(), true);
-  client.publish(SENSORNAME "/rssi", String(WiFi.RSSI()).c_str(), true);
+  client.publish(setpowerpub, String(setPower).c_str(), true); //send power status
+  client.publish(seteffectpub, String(setEffect).c_str(), true); //send current effect
+  client.publish(setbrightnesspub, String(setBrightness).c_str(), true); //send current brightness
+  client.publish(setcolorpub, String(setColor).c_str(), true); //send current color
+  client.publish(setanimationspeedpub, String(setAnimationSpeed).c_str(), true); //set current animation speed
+  client.publish(SENSORNAME "/rssi", String(WiFi.RSSI()).c_str(), true); //send current signal strength
   
-  client.publish(SENSORNAME "/minutesUptime", String((millis()/60000)).c_str(), true);
-  timer.setTimeout(120000, checkIn);
+  client.publish(SENSORNAME "/minutesUptime", String((millis()/60000)).c_str(), true); //send uptime in minutes
+  timer.setTimeout(120000, checkIn); //set next status update
 }
 
 void setup_wifi() {
@@ -1050,9 +1043,9 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-  if (client.connect(SENSORNAME, mqtt_user, mqtt_password, SENSORNAME "/status", 1, 1, "OFFLINE")) {
+  if (client.connect(SENSORNAME, mqtt_user, mqtt_password, SENSORNAME "/status", 1, 1, "OFFLINE")) { //Added last will
       Serial.println("connected");
-      ReconnectCounter = 0;
+      ReconnectCounter = 0; //reset reconnect counter
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();
@@ -1062,7 +1055,7 @@ void reconnect() {
       client.subscribe(setpowersub);
       client.subscribe(seteffectsub);
       client.subscribe(setanimationspeed);
-      //client.publish(setpowerpub, "OFF");
+      //client.publish(setpowerpub, "OFF"); //Removed as publish Topic behavior improved
       client.publish(setOnlinePub, "ONLINE", true);
     } else {
       Serial.print("failed, rc=");
