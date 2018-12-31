@@ -1,8 +1,10 @@
 
 #include <ESP8266WiFi.h>
+#include <SimpleTimer.h>
 #include <PubSubClient.h>
 #define FASTLED_INTERRUPT_RETRY_COUNT 0
 #include <FastLED.h>
+#define FL_ALIGN_PROGMEM  __attribute__ ((aligned (4)))
 
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
@@ -26,6 +28,7 @@ int OTAport = 8266;
 #define COLOR_ORDER RGB //change to match your LED configuration // RGB for 2811's | GRB for 2812's //
 #define NUM_LEDS    175 //change to match your setup
 
+int ReconnectCounter = 0;
 ///////////////DrZzs Palettes for custom BPM effects//////////////////////////
 ///////////////Add any custom palettes here//////////////////////////////////
 
@@ -224,17 +227,19 @@ DEFINE_GRADIENT_PALETTE( Orange_to_Purple_gp ) {
 
 /****************************** MQTT TOPICS (change these topics as you wish)  ***************************************/
 
-#define colorstatuspub "bruh/mqttstrip/colorstatus"
-#define setcolorsub "bruh/mqttstrip/setcolor"
-#define setpowersub "bruh/mqttstrip/setpower"
-#define seteffectsub "bruh/mqttstrip/seteffect"
-#define setbrightness "bruh/mqttstrip/setbrightness"
+#define colorstatuspub SENSORNAME "/colorstatus"
+#define setcolorsub SENSORNAME "/setcolor"
+#define setpowersub SENSORNAME "/setpower"
+#define seteffectsub SENSORNAME "/seteffect"
+#define setbrightness SENSORNAME "/setbrightness"
+#define setanimationspeed SENSORNAME "/setanimationspeed"
 
-#define setcolorpub "bruh/mqttstrip/setcolorpub"
-#define setpowerpub "bruh/mqttstrip/setpowerpub"
-#define seteffectpub "bruh/mqttstrip/seteffectpub"
-#define setbrightnesspub "bruh/mqttstrip/setbrightnesspub"
-#define setanimationspeed "bruh/mqttstrip/setanimationspeed"
+#define setOnlinePub SENSORNAME "/status"
+#define setcolorpub SENSORNAME "/currentColor"
+#define setpowerpub SENSORNAME "/currentPower"
+#define seteffectpub SENSORNAME "/currentEffect"
+#define setbrightnesspub SENSORNAME "/currentBrightness"
+#define setanimationspeedpub SENSORNAME "/currentSpeed"
 
 /*************************** EFFECT CONTROL VARIABLES AND INITIALIZATIONS ************************************/
 
@@ -300,6 +305,7 @@ unsigned int dimmer = 1;
 uint8_t ledstart;                                             // Starting location of a flash
 uint8_t ledlen;
 int lightningcounter = 0;
+int juggleChristmas = 0;
 
 /********FOR FUNKBOX EFFECTS**********/
 int idex = 0;                //-LED INDEX (0 to NUM_LEDS-1
@@ -329,7 +335,7 @@ bool gReverseDirection = false;
 uint8_t gHue = 0;
 char message_buff[100];
 
-
+SimpleTimer timer;
 WiFiClient espClient; //this needs to be unique for each controller
 PubSubClient client(espClient); //this needs to be unique for each controller
 
@@ -399,9 +405,30 @@ void setup() {
   Serial.println("Ready");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
- 
+
+  timer.setTimeout(120000, checkIn);
+
+  client.publish(setpowerpub, "", true);
+  client.publish(seteffectpub, "", true);
+  client.publish(setbrightnesspub, "", true);
+  client.publish(setcolorpub, "", true);
+  client.publish(setanimationspeedpub, "", true);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void checkIn(){    
+  client.publish(setpowerpub, String(setPower).c_str(), true);
+  client.publish(seteffectpub, String(setEffect).c_str(), true);
+  client.publish(setbrightnesspub, String(setBrightness).c_str(), true);
+  client.publish(setcolorpub, String(setColor).c_str(), true);
+  client.publish(setanimationspeedpub, String(setAnimationSpeed).c_str(), true);
+  client.publish(SENSORNAME "/rssi", String(WiFi.RSSI()).c_str(), true);
+  
+  client.publish(SENSORNAME "/minutesUptime", String((millis()/60000)).c_str(), true);
+  timer.setTimeout(120000, checkIn);
+}
 
 void setup_wifi() {
 
@@ -435,11 +462,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     setPower = String(message_buff);
     Serial.println("Set Power: " + setPower);
     if (setPower == "OFF") {
-      client.publish(setpowerpub, "OFF");
+      client.publish(setpowerpub, "OFF", true);
     }
 
     if (setPower == "ON") {
-      client.publish(setpowerpub, "ON");
+      client.publish(setpowerpub, "ON", true);
     }
   }
 
@@ -452,6 +479,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     setEffect = String(message_buff);
     Serial.println("Set Effect: " + setEffect);
     setPower = "ON";
+    client.publish(seteffectpub, String(setEffect).c_str(), true);
     client.publish(setpowerpub, "ON");
     if (setEffect == "Twinkle") {
       twinklecounter = 0;
@@ -471,6 +499,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println("Set Brightness: " + setBrightness);
     brightness = setBrightness.toInt();
     setPower = "ON";
+    client.publish(setbrightnesspub, String(brightness).c_str(), true);
     client.publish(setpowerpub, "ON");
   }
 
@@ -483,6 +512,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     setColor = String(message_buff);
     Serial.println("Set Color: " + setColor);
     setPower = "ON";
+    client.publish(setcolorpub, String(setColor).c_str(), true);
     client.publish(setpowerpub, "ON");
     }
 
@@ -493,10 +523,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
     message_buff[i] = '\0';
     setAnimationSpeed = String(message_buff);
     animationspeed = setAnimationSpeed.toInt();
+    client.publish(setanimationspeedpub, String(setAnimationSpeed).c_str(), true);  
   }
 }
-
-
 
 void loop() {
 
@@ -506,6 +535,7 @@ void loop() {
   client.loop();
 
   ArduinoOTA.handle();
+  timer.run();
   
   int Rcolor = setColor.substring(0, setColor.indexOf(',')).toInt();
   int Gcolor = setColor.substring(setColor.indexOf(',') + 1, setColor.lastIndexOf(',')).toInt();
@@ -683,6 +713,7 @@ void loop() {
       dothue += 32;
     }
   }
+    
 
   if (setEffect == "Confetti" ) {                       // random colored speckles that blink in and fade smoothly
     fadeToBlackBy( leds, NUM_LEDS, 10);
@@ -725,8 +756,7 @@ void loop() {
     fill_solid(leds, NUM_LEDS, CRGB(Rcolor, Gcolor, Bcolor));
   }
 
-  
-
+ 
   if (setEffect == "Twinkle") {
     twinklecounter = twinklecounter + 1;
     if (twinklecounter < 2) {                               //Resets strip if previous animation was running
@@ -782,7 +812,6 @@ void loop() {
   }
 
 
-
   if (setEffect == "Police One") {                    //POLICE LIGHTS (TWO COLOR SINGLE LED)
     idex++;
     if (idex >= NUM_LEDS) {
@@ -802,7 +831,6 @@ void loop() {
         leds[i] = CHSV(0, 0, 0);
       }
     }
-
   }
 
   if (setEffect == "Police All") {                 //POLICE LIGHTS (TWO COLOR SOLID)
@@ -859,10 +887,7 @@ void loop() {
   if (setEffect == "Fire") { 
       Fire2012WithPalette();
   }
-     random16_add_entropy( random8());
-
-
-
+  random16_add_entropy( random8());
 
   EVERY_N_MILLISECONDS(10) {
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);  // FOR NOISE ANIMATION
@@ -878,7 +903,6 @@ void loop() {
       dist += beatsin8(10, 1, 4);                                              // Moving along the distance (that random number we started out with). Vary it a bit with a sine wave.
       // In some sketches, I've used millis() instead of an incremented counter. Works a treat.
     }
-
 
     if (setEffect == "Ripple") {
       for (int i = 0; i < NUM_LEDS; i++) leds[i] = CHSV(bgcol++, 255, 15);  // Rotate background colour.
@@ -901,9 +925,7 @@ void loop() {
           step ++;                                                         // Next step.
           break;
       }
-    }
-
-    
+    } 
   }
 
   EVERY_N_SECONDS(5) {
@@ -1028,24 +1050,29 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-  if (client.connect(SENSORNAME, mqtt_user, mqtt_password)) {
+  if (client.connect(SENSORNAME, mqtt_user, mqtt_password, SENSORNAME "/status", 1, 1, "OFFLINE")) {
       Serial.println("connected");
+      ReconnectCounter = 0;
 
       FastLED.clear (); //Turns off startup LEDs after connection is made
       FastLED.show();
 
       client.subscribe(setcolorsub);
       client.subscribe(setbrightness);
-      //client.subscribe(setcolortemp);
       client.subscribe(setpowersub);
       client.subscribe(seteffectsub);
       client.subscribe(setanimationspeed);
-      client.publish(setpowerpub, "OFF");
+      //client.publish(setpowerpub, "OFF");
+      client.publish(setOnlinePub, "ONLINE", true);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
+      ReconnectCounter++;
+      if(ReconnectCounter==120){ //after 10 min of no connection
+        ESP.restart();
+      }
       delay(5000);
     }
   }
